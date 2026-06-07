@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Shipment — SendFlex Logistics Solution</title>
+  <meta name="description" content="Track your SendFlex shipment in real-time. Live GPS updates, milestone history, and interactive map."/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f0f2f8; min-height: 100vh; }
+    .font-montserrat { font-family: 'Montserrat', sans-serif; }
+
+    /* ── Navbar ── */
+    .track-navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(5,10,48,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0 1.5rem; height: 100px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon {
+      height: 70px; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-icon img { height: 100%; object-fit: contain; }
+    .nav-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 600;
+      padding: 7px 16px; border-radius: 10px; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-back-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* ── Hero Banner ── */
+    .track-hero {
+      background: linear-gradient(135deg, #050A30 0%, #0d1856 50%, #050A30 100%);
+      padding: 100px 1.5rem 48px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .track-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,140,0,0.08) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,140,0,0.08) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .track-hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,140,0,0.12); border: 1px solid rgba(255,140,0,0.25);
+      color: #FF8C00; font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 6px 14px; border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .track-hero h1 {
+      font-family: 'Montserrat', sans-serif; font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.2rem); color: #fff;
+      line-height: 1.1; margin-bottom: 10px;
+    }
+    .track-hero p { color: rgba(255,255,255,0.55); font-size: 15px; max-width: 460px; margin: 0 auto 32px; }
+
+    /* ── Search Box ── */
+    .search-box {
+      max-width: 580px; margin: 0 auto;
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 18px;
+      padding: 8px; box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+    .search-inner { display: flex; gap: 8px; flex-wrap: wrap; }
+    .search-input-wrap { flex: 1 1 260px; position: relative; }
+    .search-input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #FF8C00; width: 18px; height: 18px;
+    }
+    .search-input {
+      width: 100%; background: transparent; border: none; outline: none;
+      color: #fff; font-size: 14px; font-weight: 500;
+      padding: 14px 14px 14px 42px;
+      placeholder-color: rgba(255,255,255,0.35);
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.35); }
+    .search-btn {
+      background: linear-gradient(135deg, #FF8C00, #e87000);
+      color: #fff; font-weight: 700; font-size: 14px;
+      padding: 13px 28px; border-radius: 12px; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(255,140,0,0.35);
+    }
+    .search-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(255,140,0,0.5); }
+    .search-btn:disabled { opacity: 0.7; transform: none; cursor: not-allowed; }
+
+    /* ── Main content ── */
+    .track-main {
+      max-width: 860px; margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ── States ── */
+    .state-idle {
+      text-align: center; padding: 64px 20px;
+    }
+    .state-icon {
+      width: 80px; height: 80px; border-radius: 24px;
+      background: linear-gradient(135deg, #5b21b6, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 32px;
+      box-shadow: 0 12px 40px rgba(91,33,182,0.3);
+    }
+    .state-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 22px; color: #1e1b4b; margin-bottom: 8px; }
+    .state-sub { color: #6b7280; font-size: 14px; max-width: 320px; margin: 0 auto; }
+
+    .state-loading { text-align: center; padding: 48px 20px; }
+    .spinner {
+      width: 44px; height: 44px; border: 3px solid rgba(91,33,182,0.15);
+      border-top-color: #5b21b6; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Cards ── */
+    .card { background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; overflow: hidden; margin-bottom: 16px; }
+    .card-header { padding: 18px 22px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; }
+    .card-header-title { font-weight: 700; font-size: 14px; color: #111; display: flex; align-items: center; gap: 8px; }
+    .card-body { padding: 20px 22px; }
+
+    /* Status badge colours */
+    .badge-delivered { background-color: #16a34a; }
+    .badge-transit   { background-color: #2563eb; }
+    .badge-out       { background-color: #ea580c; }
+    .badge-customs   { background-color: #0d9488; }
+    .badge-hold      { background-color: #dc2626; }
+    .badge-placed    { background-color: #6b7280; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+    @media(max-width:520px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    .stat-tile { border-radius: 16px; padding: 20px 18px; color: #fff; }
+
+    /* From/To grid */
+    .fromto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    @media(max-width:440px) { .fromto-grid { grid-template-columns: 1fr; } }
+
+    /* Pkg details */
+    .pkg-grid { display: grid; grid-template-columns: repeat(3,1fr); }
+    @media(max-width:500px) { .pkg-grid { grid-template-columns: 1fr; } }
+    .pkg-cell { padding: 18px 16px; border-right: 1px solid #f3f4f6; }
+    .pkg-cell:last-child { border-right: none; }
+
+    /* Milestones */
+    .milestone-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+    .milestone-item:last-child { border-bottom: none; }
+    .milestone-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+
+    /* Map */
+    #track-map { width: 100%; height: 420px; }
+
+    /* Progress stepper */
+    .step-row { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 20px; position: relative; }
+    .step-dot { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-connector { position: absolute; left: 16px; top: 34px; width: 2px; height: 20px; }
+
+    /* Action buttons */
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-weight: 700; font-size: 13px; padding: 11px 22px;
+      border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .action-btn-primary { background: #5b21b6; color: #fff; box-shadow: 0 4px 16px rgba(91,33,182,0.3); }
+    .action-btn-primary:hover { background: #4c1d95; transform: translateY(-1px); }
+    .action-btn-secondary { background: #fff; color: #374151; border: 1px solid #e5e7eb; }
+    .action-btn-secondary:hover { background: #f9fafb; }
+
+    /* Toast */
+    .toast {
+      position: fixed; top: 80px; right: 16px; z-index: 999;
+      background: rgba(5,10,48,0.95); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,140,0,0.3); color: #fff;
+      font-size: 13px; font-weight: 500; padding: 12px 18px;
+      border-radius: 14px; box-shadow: 0 16px 50px rgba(0,0,0,0.4);
+      display: flex; align-items: center; gap: 8px;
+      animation: slideIn 0.35s ease-out; max-width: 320px;
+    }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* Fade-in cards */
+    .fade-in { animation: fadeUp 0.4s ease-out both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Map legend */
+    .legend-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #6b7280; }
+
+    /* On hold alert */
+    .hold-alert { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+
+    /* Realtime pulse */
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(91,33,182,0.1); color: #5b21b6;
+      font-size: 11px; font-weight: 700; padding: 4px 10px;
+      border-radius: 100px;
+    }
+    .live-dot { width: 7px; height: 7px; background: #5b21b6; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="track-navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">
+        <img src="Logo.png" alt="SendFlex Logo">
+      </div>
+    </a>
+    <a href="index.html" class="nav-back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Home
+    </a>
+  </nav>
+
+  <!-- ── Hero Banner ── -->
+  <div class="track-hero">
+    <div class="relative z-10">
+      <div class="track-hero-badge">
+        <span style="width:7px;height:7px;background:#FF8C00;border-radius:50%;animation:pulse 1.4s ease-in-out infinite;display:inline-block;"></span>
+        Live Real‑Time Tracking
+      </div>
+      <h1>Track Your Shipment</h1>
+      <p>Enter your tracking number below to get real‑time updates, milestones, and live map data.</p>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <div class="search-inner">
+          <div class="search-input-wrap">
+            <svg class="search-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input id="track-input" class="search-input" type="text" placeholder="Enter tracking number (e.g. SFL-2026-001)" autocomplete="off" spellcheck="false"/>
+          </div>
+          <button id="track-btn" class="search-btn" onclick="doTrack()">
+            <span id="track-btn-text">Track Now</span>
+            <div id="track-btn-spinner" style="display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <main class="track-main">
+
+    <!-- Idle State -->
+    <div id="state-idle" class="state-idle">
+      <div class="state-icon">📦</div>
+      <div class="state-title">Ready to Track</div>
+      <p class="state-sub">Enter your SendFlex Logistics tracking number above to see live shipment status, GPS location, and milestone history.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="state-loading" style="display:none;" class="state-loading">
+      <div class="spinner"></div>
+      <div class="state-title" style="font-size:17px;">Fetching shipment data…</div>
+      <p class="state-sub">Connecting to our tracking network.</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="state-error" style="display:none;" class="card fade-in">
+      <div class="card-body text-center" style="padding:48px 24px;">
+        <div style="font-size:44px;margin-bottom:16px;">🔍</div>
+        <div class="state-title">Shipment Not Found</div>
+        <p class="state-sub" style="margin-top:8px;">No shipment found with that tracking number. Please verify it and try again, or contact our support team.</p>
+        <a href="index.html#contact-section" style="display:inline-flex;align-items:center;gap:6px;margin-top:24px;background:#5b21b6;color:#fff;font-weight:700;font-size:13px;padding:10px 22px;border-radius:12px;text-decoration:none;">
+          Contact Support
+        </a>
+      </div>
+    </div>
+
+    <!-- Dashboard (hidden until loaded) -->
+    <div id="state-dashboard" style="display:none;">
+
+      <!-- ── Card 1: Tracking # + Status + Barcode ── -->
+      <div class="card fade-in">
+        <div style="background:linear-gradient(135deg,#050A30,#1a2463);padding:22px 24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <p style="color:rgba(167,139,250,0.8);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Tracking Number</p>
+            <h2 id="d-tracking-num" class="font-montserrat" style="color:#fff;font-weight:900;font-size:26px;letter-spacing:0.04em;"></h2>
+            <p id="d-description" style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px;"></p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            <span id="d-status-badge" style="color:#fff;font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;text-transform:uppercase;letter-spacing:0.08em;"></span>
+            <span class="live-badge"><span class="live-dot"></span>Live</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center;padding:28px;background:#fafafa;">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px 32px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
+            <svg id="d-barcode"></svg>
+            <p id="d-barcode-label" style="color:#9ca3af;font-size:10px;margin-top:8px;font-family:monospace;letter-spacing:0.12em;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 2: From / To ── -->
+      <div class="fromto-grid fade-in" style="animation-delay:0.05s;">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:32px;height:32px;background:#5b21b6;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="14" height="14" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              </div>
+              <span style="color:#5b21b6;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">From</span>
+            </div>
+            <p id="d-from-name" style="color:#111;font-weight:700;font-size:15px;line-height:1.3;"></p>
+            <p id="d-from-city"    style="color:#5b21b6;font-size:12px;margin-top:4px;font-weight:500;"></p>
+            <p id="d-from-country" style="color:#5b21b6;font-size:12px;font-weight:500;"></p>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <div style="width:32px;height:32px;background:#FF8C00;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="14" height="14" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span style="color:#FF8C00;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">To</span>
+            </div>
+            <p id="d-to-name"    style="color:#111;font-weight:700;font-size:15px;line-height:1.3;"></p>
+            <p id="d-to-city"    style="color:#5b21b6;font-size:12px;margin-top:4px;font-weight:500;"></p>
+            <p id="d-to-country" style="color:#5b21b6;font-size:12px;font-weight:500;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 3: Stats ── -->
+      <div class="stats-grid fade-in" style="animation-delay:0.1s;">
+        <div class="stat-tile" style="background:linear-gradient(135deg,#5b21b6,#7c3aed);">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.7)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;">Distance</span>
+          </div>
+          <p id="d-distance" style="font-size:22px;font-weight:900;font-family:'Montserrat',sans-serif;line-height:1;">—</p>
+          <p style="font-size:10px;opacity:0.6;margin-top:4px;">Remaining to destination</p>
+        </div>
+        <div class="stat-tile" style="background:linear-gradient(135deg,#ea580c,#FF8C00);">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.7)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;">ETA</span>
+          </div>
+          <p id="d-eta" style="font-size:22px;font-weight:900;font-family:'Montserrat',sans-serif;line-height:1;">—</p>
+          <p id="d-eta-sub" style="font-size:10px;opacity:0.7;margin-top:4px;">Time remaining</p>
+        </div>
+        <div class="stat-tile" style="background:linear-gradient(135deg,#16a34a,#22c55e);">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.7)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;">Arrival</span>
+          </div>
+          <p id="d-arrival" style="font-size:17px;font-weight:900;font-family:'Montserrat',sans-serif;line-height:1.2;">—</p>
+          <p style="font-size:10px;opacity:0.6;margin-top:4px;">Estimated delivery</p>
+        </div>
+      </div>
+
+      <!-- ── Card 4: Package Details ── -->
+      <div class="card fade-in" style="animation-delay:0.15s;">
+        <div class="card-header">
+          <div class="card-header-title">
+            <div style="width:28px;height:28px;background:#f3f0ff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" fill="none" stroke="#5b21b6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            Package Details
+          </div>
+        </div>
+        <div class="pkg-grid">
+          <div class="pkg-cell">
+            <p style="color:#9ca3af;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Package Type</p>
+            <p id="d-pkg-type"    style="color:#111;font-weight:600;font-size:13px;">—</p>
+            <p id="d-pkg-service" style="color:#6b7280;font-size:11px;margin-top:3px;">—</p>
+          </div>
+          <div class="pkg-cell">
+            <p style="color:#9ca3af;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Weight &amp; Qty</p>
+            <p id="d-pkg-weight" style="color:#111;font-weight:600;font-size:13px;">—</p>
+            <p id="d-pkg-qty"    style="color:#6b7280;font-size:11px;margin-top:3px;">—</p>
+            <p id="d-pkg-dims"   style="color:#6b7280;font-size:11px;">—</p>
+          </div>
+          <div class="pkg-cell">
+            <p style="color:#9ca3af;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Value &amp; Cost</p>
+            <p id="d-pkg-declared" style="color:#111;font-weight:600;font-size:13px;">—</p>
+            <p id="d-pkg-cost"     style="color:#6b7280;font-size:11px;margin-top:3px;">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── On Hold Alert ── -->
+      <div id="d-hold-alert" style="display:none;" class="hold-alert fade-in">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="width:42px;height:42px;background:#ea580c;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" fill="#fff" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div>
+                <h4 style="color:#7c2d12;font-weight:700;font-size:14px;margin-bottom:4px;">Shipment On Hold</h4>
+                <p id="d-hold-reason" style="color:#9a3412;font-size:12px;line-height:1.5;"></p>
+                <p style="color:#c2410c;font-size:11px;margin-top:6px;font-style:italic;">Your package is temporarily paused. Contact our team to resolve this quickly.</p>
+              </div>
+              <span style="background:#ea580c;color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;text-transform:uppercase;white-space:nowrap;">On Hold</span>
+            </div>
+            <a href="index.html#contact-section" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;border:1px solid #5b21b6;color:#5b21b6;font-weight:600;font-size:12px;padding:8px 16px;border-radius:10px;text-decoration:none;transition:all 0.2s;">
+              Contact Us to Resolve
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 5: Tracking History ── -->
+      <div class="card fade-in" style="animation-delay:0.2s;">
+        <div class="card-header">
+          <div class="card-header-title">
+            <div style="width:28px;height:28px;background:#f3f0ff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" fill="none" stroke="#5b21b6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            Tracking History
+          </div>
+          <span class="live-badge"><span class="live-dot"></span>Live</span>
+        </div>
+        <div class="card-body" id="d-milestones" style="padding:8px 22px;">
+          <div style="text-align:center;color:#9ca3af;font-size:13px;padding:32px 0;">Loading tracking history…</div>
+        </div>
+      </div>
+
+      <!-- ── Card 6: Live Map ── -->
+      <div class="card fade-in" style="animation-delay:0.25s;">
+        <div class="card-header">
+          <div class="card-header-title">
+            <div style="width:28px;height:28px;background:#f3f0ff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" fill="none" stroke="#5b21b6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+              Live Tracking Map
+              <p id="d-map-strip" style="font-weight:400;font-size:11px;color:#9ca3af;margin-top:1px;"></p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="d-time-ago" style="display:none;background:#f3f4f6;color:#6b7280;font-size:11px;font-weight:500;padding:4px 10px;border-radius:100px;"></span>
+            <span class="live-badge"><span class="live-dot"></span>Live</span>
+          </div>
+        </div>
+        <div id="track-map"></div>
+        <!-- Legend -->
+        <div style="padding:16px 22px;background:#fafafa;border-top:1px solid #f3f4f6;">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            <span class="legend-dot">🏁 Origin</span>
+            <span class="legend-dot"><span style="width:14px;height:14px;border-radius:50%;background:#22c55e;display:inline-flex;align-items:center;justify-content:center;"><svg width="9" height="9" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span> Completed</span>
+            <span class="legend-dot"><span style="width:14px;height:14px;border-radius:50%;background:#FF8C00;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;">N</span> Next Stop</span>
+            <span class="legend-dot">📍 Current</span>
+            <span class="legend-dot">🎯 Destination</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 7: Delivery Progress ── -->
+      <div class="card fade-in" style="animation-delay:0.3s;">
+        <div class="card-header">
+          <div class="card-header-title">
+            <div style="width:28px;height:28px;background:#f3f0ff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" fill="none" stroke="#5b21b6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            Delivery Progress
+          </div>
+        </div>
+        <div class="card-body" id="d-stepper"></div>
+      </div>
+
+      <!-- ── Action Buttons ── -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;" class="fade-in" style="animation-delay:0.35s;">
+        <button class="action-btn action-btn-primary" onclick="doDownloadWaybill()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download Waybill
+        </button>
+        <button class="action-btn action-btn-secondary" onclick="doShare()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          Share Tracking
+        </button>
+        <a href="index.html#contact-section" class="action-btn action-btn-secondary" style="text-decoration:none;">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Contact Support
+        </a>
+      </div>
+
+    </div><!-- /state-dashboard -->
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+  // ── Supabase ──
+  const SUPABASE_URL = 'https://oswkzcwgtgvnkdlhrvop.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zd2t6Y3dndGd2bmtkbGhydm9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzMzODAsImV4cCI6MjA5MTQwOTM4MH0.8n7dgTodojpZAD1C9VRP_bfcGOmc6TG_Xy4ik6P_5es';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── State ──
+  let currentShipment = null;
+  let realtimeChannel = null;
+  let milestonesChannel = null;
+
+  // ── UI helpers ──
+  const $ = id => document.getElementById(id);
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val || '—'; };
+
+  function showState(name) {
+    ['idle','loading','error','dashboard'].forEach(s => {
+      const el = $('state-' + s);
+      if (el) el.style.display = (s === name) ? '' : 'none';
+    });
+  }
+
+  function showToast(msg, duration = 4000) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<span style="width:8px;height:8px;background:#FF8C00;border-radius:50%;flex-shrink:0;animation:pulse 1.4s ease-in-out infinite;"></span>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, duration);
+  }
+
+  // ── Track ──
+  async function doTrack() {
+    const input = $('track-input');
+    const trackingNumber = input?.value?.trim().toUpperCase();
+    if (!trackingNumber) {
+      if (input) { input.style.outline = '2px solid #FF8C00'; input.focus(); setTimeout(() => { input.style.outline = ''; }, 1800); }
+      return;
+    }
+
+    // Update URL without reload
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('track', trackingNumber);
+      window.history.pushState({}, '', url);
+    } catch(e) {}
+
+    const btn     = $('track-btn');
+    const btnText = $('track-btn-text');
+    const spinner = $('track-btn-spinner');
+    if (btn)     btn.disabled = true;
+    if (btnText) btnText.textContent = 'Searching…';
+    if (spinner) spinner.style.display = 'block';
+
+    showState('loading');
+    cleanupRealtime();
+
+    try {
+      const { data: shipment, error } = await db
+        .from('shipments')
+        .select('*')
+        .eq('tracking_number', trackingNumber)
+        .single();
+
+      if (error || !shipment) {
+        showState('error');
+        return;
+      }
+
+      currentShipment = shipment;
+
+      const { data: milestones } = await db
+        .from('milestones')
+        .select('*')
+        .eq('shipment_id', shipment.id)
+        .order('timestamp', { ascending: false });
+
+      renderDashboard(shipment, milestones || []);
+      showState('dashboard');
+
+      // Scroll the dashboard into view smoothly after a short delay
+      setTimeout(() => {
+        const dash = $('state-dashboard');
+        if (dash) dash.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      setupRealtime(shipment.id);
+
+    } catch (err) {
+      console.error('Track error:', err);
+      showState('error');
+    } finally {
+      if (btn)     btn.disabled = false;
+      if (btnText) btnText.textContent = 'Track Now';
+      if (spinner) spinner.style.display = 'none';
+    }
+  }
+
+  // ── Render Dashboard ──
+  function renderDashboard(s, milestones) {
+    // Card 1
+    set('d-tracking-num', s.tracking_number);
+    set('d-description', s.description);
+    $('d-barcode-label').textContent = s.tracking_number;
+
+    const badge = $('d-status-badge');
+    badge.textContent = s.status || 'Unknown';
+    const cls = { 'Delivered':'badge-delivered','In Transit':'badge-transit','Out for Delivery':'badge-out','Customs Cleared':'badge-customs','On Hold':'badge-hold','Order Placed':'badge-placed' }[s.status] || 'badge-placed';
+    badge.className = cls;
+
+    // Barcode
+    const barcodeEl = $('d-barcode');
+    if (barcodeEl && typeof JsBarcode !== 'undefined') {
+      try {
+        JsBarcode(barcodeEl, s.tracking_number, { format:'CODE128', width:2.2, height:60, displayValue:false, margin:0 });
+      } catch(e) { console.warn('Barcode:', e); }
+    }
+
+    // Card 2
+    set('d-from-name',    s.sender_name);
+    set('d-from-city',    s.origin_city    || s.origin);
+    set('d-from-country', s.origin_country);
+    set('d-to-name',      s.receiver_name);
+    set('d-to-city',      s.destination_city    || s.destination);
+    set('d-to-country',   s.destination_country);
+
+    // Card 3
+    set('d-distance', s.distance_km  || '—');
+    set('d-eta',      s.eta_display  || '—');
+    if (s.estimated_delivery) {
+      const d = new Date(s.estimated_delivery);
+      set('d-arrival', d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }));
+    }
+
+    // Card 4
+    set('d-pkg-type',     s.package_type);
+    set('d-pkg-service',  s.service_type ? `Service: ${s.service_type}` : '');
+    set('d-pkg-weight',   s.weight    ? `${s.weight} kg` : '—');
+    set('d-pkg-qty',      s.quantity  ? `Qty: ${s.quantity}` : '');
+    set('d-pkg-dims',     s.dimensions ? `Dims: ${s.dimensions}` : '');
+    set('d-pkg-declared', s.declared_value  ? `Declared: ${s.declared_value}` : '—');
+    set('d-pkg-cost',     s.shipping_cost   ? `Shipping: ${s.shipping_cost}` : '');
+
+    // On Hold
+    const holdAlert = $('d-hold-alert');
+    if (s.status === 'On Hold') {
+      holdAlert.style.display = '';
+      set('d-hold-reason', s.status_reason || 'Your shipment is currently on hold. Please contact us.');
+    } else {
+      holdAlert.style.display = 'none';
+    }
+
+    // Time ago
+    if (s.updated_at) {
+      const diff = Math.floor((Date.now() - new Date(s.updated_at)) / 60000);
+      const label = diff < 1 ? 'just now' : diff < 60 ? `${diff}m ago` : `${Math.floor(diff/60)}h ago`;
+      const el = $('d-time-ago');
+      el.textContent = label;
+      el.style.display = '';
+    }
+
+    // Milestones
+    renderMilestones(milestones);
+
+    // Stepper
+    renderStepper(s.status);
+
+    // Map
+    if (window._mapReady) {
+      drawMap(s);
+    } else {
+      window._pendingShipment = s;
+    }
+  }
+
+  function renderMilestones(milestones) {
+    const el = $('d-milestones');
+    if (!el) return;
+    if (!milestones || milestones.length === 0) {
+      el.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:28px 0;">No tracking history available yet.</div>';
+      return;
+    }
+    el.innerHTML = milestones.map((m, i) => {
+      const date = new Date(m.timestamp);
+      const fmt = date.toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      const isLatest = i === 0;
+      return `<div class="milestone-item">
+        <div class="milestone-dot" style="background:${isLatest ? '#5b21b6' : '#d1d5db'};${isLatest ? 'box-shadow:0 0 0 4px rgba(91,33,182,0.15);' : ''}"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <p style="color:#1f2937;font-size:13px;font-weight:500;line-height:1.4;">${m.message}</p>
+            ${isLatest ? '<span style="background:rgba(91,33,182,0.1);color:#5b21b6;font-size:9px;font-weight:700;padding:3px 8px;border-radius:100px;flex-shrink:0;white-space:nowrap;">LATEST</span>' : ''}
+          </div>
+          ${m.location_name ? `<p style="color:#6b7280;font-size:11px;margin-top:3px;">${m.location_name}</p>` : ''}
+          <p style="color:#9ca3af;font-size:11px;margin-top:4px;">${fmt}</p>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const STATUS_STEPS = [
+    { key:'Order Placed',    icon:'📋', label:'Order Confirmed',    sub:'Shipment created & payment received' },
+    { key:'In Transit',      icon:'✈️', label:'In Transit',         sub:'Cargo en route to destination' },
+    { key:'Customs Cleared', icon:'🛃', label:'Customs Cleared',    sub:'Passed customs inspection' },
+    { key:'Out for Delivery',icon:'🚚', label:'Out for Delivery',   sub:'With local delivery courier' },
+    { key:'Delivered',       icon:'✅', label:'Delivered',           sub:'Package received by recipient' },
+  ];
+
+  function renderStepper(status) {
+    const el = $('d-stepper');
+    if (!el) return;
+    const curIdx = STATUS_STEPS.findIndex(s => s.key === status);
+    el.innerHTML = STATUS_STEPS.map((step, idx) => {
+      const state = idx < curIdx ? 'done' : idx === curIdx ? 'active' : 'pending';
+      const dotBg = state === 'done' ? '#22c55e' : state === 'active' ? '#5b21b6' : '#e5e7eb';
+      const dotContent = state === 'done'
+        ? `<svg width="13" height="13" fill="none" stroke="#fff" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`
+        : state === 'active'
+          ? `<span style="font-size:14px;">${step.icon}</span>`
+          : `<span style="color:#9ca3af;font-size:11px;font-weight:700;">${idx+1}</span>`;
+      const labelColor = state === 'active' ? '#5b21b6' : state === 'done' ? '#374151' : '#9ca3af';
+      const subColor   = state === 'active' ? '#4b5563' : '#9ca3af';
+      const connColor  = state !== 'pending' ? '#86efac' : '#e5e7eb';
+      const connector  = idx < STATUS_STEPS.length - 1
+        ? `<div style="position:absolute;left:16px;top:35px;width:2px;height:22px;background:${connColor};border-radius:1px;"></div>` : '';
+      return `<div class="step-row">
+        ${connector}
+        <div class="step-dot" style="background:${dotBg};box-shadow:${state==='active'?'0 0 0 4px rgba(91,33,182,0.15)':'none'};">${dotContent}</div>
+        <div style="padding-top:4px;">
+          <div style="font-size:13px;font-weight:700;color:${labelColor};">${step.label}</div>
+          <div style="font-size:11px;color:${subColor};margin-top:2px;">${step.sub}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Enter key ──
+  (function attachEnter() {
+    const inp = document.getElementById('track-input');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') doTrack(); });
+  })();
+
+  // ── Download Waybill ──
+  function doDownloadWaybill() {
+    if (!currentShipment) return;
+    const s = currentShipment;
+    const content = `SENDFLEX LOGISTICS SOLUTION — OFFICIAL WAYBILL\n${'='.repeat(46)}\nTracking Number: ${s.tracking_number}\nStatus:          ${s.status}\n\nSENDER:   ${s.sender_name || '—'}\nRECEIVER: ${s.receiver_name || '—'}\n\nORIGIN:      ${s.origin || '—'}\nDESTINATION: ${s.destination || '—'}\n\nWEIGHT:   ${s.weight ? s.weight + ' kg' : '—'}\nCONTENTS: ${s.description || '—'}\nEST. DELIVERY: ${s.estimated_delivery || '—'}\n\n${'='.repeat(46)}\nGenerated: ${new Date().toLocaleString()}\n\nThis is an official waybill from SendFlex Logistics Solution.\ninfo@sendflexlogisticssolution.com`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `waybill-${s.tracking_number}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📄 Waybill downloaded!');
+  }
+
+  // ── Share ──
+  function doShare() {
+    if (!currentShipment) return;
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: 'SendFlex Logistics Solution', text: `Track shipment ${currentShipment.tracking_number}`, url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => showToast('🔗 Tracking link copied to clipboard!'));
+    }
+  }
+
+  // ── Realtime subs ──
+  function setupRealtime(shipmentId) {
+    realtimeChannel = db.channel(`track-ship-${shipmentId}`)
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:'shipments', filter:`id=eq.${shipmentId}` }, async payload => {
+        currentShipment = { ...currentShipment, ...payload.new };
+        const { data: milestones } = await db.from('milestones').select('*').eq('shipment_id', shipmentId).order('timestamp',{ascending:false});
+        renderDashboard(payload.new, milestones || []);
+        showToast('🔄 Shipment updated in real-time!');
+      })
+      .subscribe();
+
+    milestonesChannel = db.channel(`track-mile-${shipmentId}`)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'milestones', filter:`shipment_id=eq.${shipmentId}` }, payload => {
+        prependMilestone(payload.new);
+        showToast('🗺️ New tracking update received!');
+      })
+      .subscribe();
+  }
+
+  function prependMilestone(m) {
+    const el = $('d-milestones');
+    if (!el) return;
+    const placeholder = el.querySelector('[style*="text-align:center"]');
+    if (placeholder) placeholder.remove();
+    const date = new Date(m.timestamp);
+    const fmt  = date.toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    const item = document.createElement('div');
+    item.className = 'milestone-item';
+    item.innerHTML = `
+      <div class="milestone-dot" style="background:#5b21b6;box-shadow:0 0 0 4px rgba(91,33,182,0.15);animation:pulse 1.5s ease-in-out infinite;"></div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+          <p style="color:#1f2937;font-size:13px;font-weight:500;">${m.message}</p>
+          <span style="background:rgba(91,33,182,0.1);color:#5b21b6;font-size:9px;font-weight:700;padding:3px 8px;border-radius:100px;flex-shrink:0;">LIVE</span>
+        </div>
+        ${m.location_name ? `<p style="color:#6b7280;font-size:11px;margin-top:3px;">${m.location_name}</p>` : ''}
+        <p style="color:#9ca3af;font-size:11px;margin-top:4px;">${fmt}</p>
+      </div>`;
+    el.prepend(item);
+  }
+
+  function cleanupRealtime() {
+    if (realtimeChannel)  { db.removeChannel(realtimeChannel);  realtimeChannel  = null; }
+    if (milestonesChannel){ db.removeChannel(milestonesChannel); milestonesChannel = null; }
+  }
+
+  // ── Auto-track from URL param ──
+  (function initAutoTrack() {
+    const params  = new URLSearchParams(window.location.search);
+    const trackId = params.get('track');
+    if (trackId) {
+      const inp = $('track-input');
+      if (inp) inp.value = trackId;
+      setTimeout(doTrack, 150);
+    }
+  })();
+  </script>
+
+  <!-- Google Maps -->
+  <script>
+  window._mapReady = false;
+  window._pendingShipment = null;
+
+  window.initTrackMap = function() {
+    window._mapReady = true;
+    if (window._pendingShipment) {
+      drawMap(window._pendingShipment);
+      window._pendingShipment = null;
+    }
+  };
+
+  const MIDNIGHT_STYLE = [
+    { elementType:'geometry', stylers:[{color:'#1a2744'}] },
+    { elementType:'labels.text.fill', stylers:[{color:'#aec9d4'}] },
+    { elementType:'labels.text.stroke', stylers:[{color:'#0f1e38'}] },
+    { featureType:'administrative.country', elementType:'geometry.stroke', stylers:[{color:'#3d6680'},{weight:1.5}] },
+    { featureType:'landscape', elementType:'geometry', stylers:[{color:'#1a2744'}] },
+    { featureType:'poi', stylers:[{visibility:'off'}] },
+    { featureType:'road', elementType:'geometry', stylers:[{color:'#243a5e'}] },
+    { featureType:'transit', stylers:[{visibility:'off'}] },
+    { featureType:'water', elementType:'geometry', stylers:[{color:'#061422'}] },
+  ];
+
+  let _map = null, _transportMarker = null, _plannedLine = null, _traveledLine = null;
+  let _stopMarkers = [], _pulseOverlay = null, _PulseClass = null, _animId = null;
+
+  function ensurePulse() {
+    if (_PulseClass) return;
+    _PulseClass = class extends google.maps.OverlayView {
+      constructor(pos) { super(); this._pos = pos; this._div = null; }
+      onAdd() {
+        const d = document.createElement('div');
+        d.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none;z-index:5;';
+        d.innerHTML = `
+          <div style="position:absolute;width:66px;height:66px;margin-left:-33px;margin-top:-33px;border-radius:50%;border:3px solid #FF8C00;animation:trackPulse 1.9s ease-out infinite;opacity:0;"></div>
+          <div style="position:absolute;width:66px;height:66px;margin-left:-33px;margin-top:-33px;border-radius:50%;border:2px solid rgba(255,140,0,0.4);animation:trackPulse 1.9s ease-out 0.65s infinite;opacity:0;"></div>`;
+        if (!document.getElementById('track-pulse-style')) {
+          const s = document.createElement('style');
+          s.id = 'track-pulse-style';
+          s.textContent = '@keyframes trackPulse{0%{transform:scale(0.7);opacity:0.9}100%{transform:scale(2.4);opacity:0}}';
+          document.head.appendChild(s);
+        }
+        this._div = d;
+        this.getPanes().overlayMouseTarget.appendChild(d);
+      }
+      draw() {
+        if (!this._div) return;
+        const p = this.getProjection().fromLatLngToDivPixel(this._pos);
+        this._div.style.left = p.x + 'px'; this._div.style.top = p.y + 'px';
+      }
+      onRemove() { if (this._div) { this._div.parentNode?.removeChild(this._div); this._div = null; } }
+      moveTo(pos) { this._pos = pos; this.draw(); }
+    };
+  }
+
+  function clearMap() {
+    if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
+    [_transportMarker, _plannedLine, _traveledLine].forEach(x => x?.setMap(null));
+    _transportMarker = _plannedLine = _traveledLine = null;
+    _stopMarkers.forEach(m => m.setMap(null)); _stopMarkers = [];
+    if (_pulseOverlay) { _pulseOverlay.setMap(null); _pulseOverlay = null; }
+  }
+
+  function getTransportSVG(type) {
+    const svgs = {
+      plane: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="56" height="56"><circle cx="28" cy="28" r="26" fill="#050A30" stroke="#FF8C00" stroke-width="2.5"/><path d="M42 22 L28 36 L14 22 L28 27 Z" fill="#FF8C00"/><path d="M24 31 L20 44 L28 40 L36 44 L32 31" fill="#FF8C00" opacity="0.75"/></svg>`,
+      ship:  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 44" width="64" height="44"><path d="M6 22 Q32 13 58 22 L54 38 Q32 44 10 38 Z" fill="#050A30" stroke="#FF8C00" stroke-width="2"/><rect x="20" y="5" width="24" height="18" rx="3" fill="#050A30" stroke="#FF8C00" stroke-width="1.5"/></svg>`,
+      bus:   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 46" width="72" height="46"><rect x="4" y="4" width="64" height="30" rx="6" fill="#050A30" stroke="#FF8C00" stroke-width="2"/><rect x="8" y="8" width="14" height="12" rx="2" fill="rgba(255,140,0,0.3)"/><rect x="26" y="8" width="14" height="12" rx="2" fill="rgba(255,140,0,0.3)"/><rect x="44" y="8" width="14" height="12" rx="2" fill="rgba(255,140,0,0.3)"/><circle cx="16" cy="40" r="6" fill="#050A30" stroke="#FF8C00" stroke-width="2"/><circle cx="56" cy="40" r="6" fill="#050A30" stroke="#FF8C00" stroke-width="2"/></svg>`,
+      train: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 46" width="78" height="46"><rect x="2" y="2" width="74" height="28" rx="5" fill="#050A30" stroke="#FF8C00" stroke-width="2"/><rect x="7" y="6" width="16" height="12" rx="2" fill="rgba(255,140,0,0.3)"/><rect x="29" y="6" width="16" height="12" rx="2" fill="rgba(255,140,0,0.3)"/><rect x="51" y="6" width="16" height="12" rx="2" fill="rgba(255,140,0,0.3)"/></svg>`,
+    };
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent((svgs[type] || svgs.plane).trim());
+  }
+
+  async function geocode(address) {
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`, { headers:{'Accept-Language':'en','User-Agent':'SendFlex/1.0'} });
+    const data = await res.json();
+    if (data && data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    throw new Error('Geocode failed: ' + address);
+  }
+
+  async function drawMap(shipment) {
+    if (!window._mapReady) { window._pendingShipment = shipment; return; }
+
+    if (!_map) {
+      _map = new google.maps.Map(document.getElementById('track-map'), {
+        center:{lat:20,lng:25}, zoom:3, styles:MIDNIGHT_STYLE,
+        disableDefaultUI:true, zoomControl:true,
+        zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_BOTTOM},
+        gestureHandling:'cooperative', backgroundColor:'#061422',
+      });
+    }
+    clearMap();
+
+    const { data: stops } = await db.from('route_stops').select('*').eq('shipment_id', shipment.id).order('stop_index',{ascending:true});
+
+    if (stops && stops.length >= 2) {
+      renderWithStops(stops, shipment.current_stop_index || 0, shipment, shipment.transport_type || 'plane');
+      return;
+    }
+
+    let originCoords = (shipment.origin_lat && shipment.origin_lng)
+      ? { lat: parseFloat(shipment.origin_lat), lng: parseFloat(shipment.origin_lng) } : null;
+    let destCoords = (shipment.destination_lat && shipment.destination_lng)
+      ? { lat: parseFloat(shipment.destination_lat), lng: parseFloat(shipment.destination_lng) } : null;
+
+    try {
+      if (!originCoords && shipment.origin) originCoords = await geocode(shipment.origin);
+      if (!destCoords && shipment.destination) destCoords = await geocode(shipment.destination);
+    } catch(e) { console.warn('Geocode fail:', e); }
+
+    if (originCoords && destCoords) {
+      renderWithStops(
+        [{ stop_index:0, name:shipment.origin||'Origin', lat:originCoords.lat, lng:originCoords.lng },
+         { stop_index:1, name:shipment.destination||'Destination', lat:destCoords.lat, lng:destCoords.lng }],
+        Math.min(shipment.current_stop_index||0, 1), shipment, shipment.transport_type||'plane'
+      );
+    } else {
+      const cur = shipment.lat && shipment.lng ? { lat:parseFloat(shipment.lat), lng:parseFloat(shipment.lng) } : null;
+      if (cur) {
+        placeTransport(cur.lat, cur.lng, shipment.transport_type||'plane');
+        _map.panTo(cur); _map.setZoom(5);
+      }
+    }
+
+    const strip = document.getElementById('d-map-strip');
+    if (strip && shipment.updated_at) {
+      const diff = Math.floor((Date.now() - new Date(shipment.updated_at)) / 60000);
+      strip.textContent = `Updated ${diff < 1 ? 'just now' : diff + 'm ago'}`;
+    }
+  }
+
+  function renderWithStops(stops, curIdx, shipment, ttype) {
+    ensurePulse();
+    const sorted = [...stops].sort((a,b) => a.stop_index - b.stop_index);
+    const total  = sorted.length;
+    const idx    = Math.max(0, Math.min(curIdx, total - 1));
+    const coords = sorted.map(s => ({ lat: parseFloat(s.lat), lng: parseFloat(s.lng) }));
+    const status = (shipment.status||'').trim();
+
+    if (idx > 0) {
+      _traveledLine = new google.maps.Polyline({ path:coords.slice(0,idx+1), geodesic:true, strokeColor:'#22c55e', strokeOpacity:1, strokeWeight:3.5, map:_map, zIndex:2 });
+    }
+    if (idx < total - 1) {
+      _plannedLine = new google.maps.Polyline({
+        path:coords.slice(idx), geodesic:true, strokeOpacity:0,
+        icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:0.7,strokeColor:'#7c3aed',scale:2.5},offset:'0',repeat:'14px'}],
+        map:_map, zIndex:1
+      });
+    }
+
+    sorted.forEach((stop,i) => {
+      const pos = { lat: parseFloat(stop.lat), lng: parseFloat(stop.lng) };
+      let svg;
+      if (i === 0) {
+        const passed = idx > 0;
+        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="22" r="20" fill="${passed?'#22c55e':'#5b21b6'}" stroke="white" stroke-width="2"/><text x="22" y="28" text-anchor="middle" font-size="18" fill="white">${passed?'✓':'🏁'}</text></svg>`;
+      } else if (i === total-1) {
+        const isDelivered = status==='Delivered';
+        svg = null;
+        const m = new google.maps.Marker({ position:pos, map:_map, title:stop.name||'Destination', icon:{path:'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',fillColor:isDelivered?'#16a34a':'#FF8C00',fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5,scale:1.2,anchor:new google.maps.Point(0,0)}, zIndex:10 });
+        _stopMarkers.push(m);
+        return;
+      } else {
+        const isPast=i<idx, isCurrent=i===idx, isNext=i===idx+1;
+        const bg = isPast?'#16a34a':isCurrent?'#FF8C00':isNext?'#7c3aed':'#64748b';
+        const inner = isPast?'✓':i;
+        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38" width="38" height="38"><circle cx="19" cy="19" r="17" fill="${bg}" stroke="white" stroke-width="2.5"/><text x="19" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="${isPast?13:11}" font-weight="700" fill="white">${inner}</text></svg>`;
+      }
+      const m = new google.maps.Marker({ position:pos, map:_map, title:stop.name||`Stop ${i}`, icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(i===0?44:38,i===0?44:38),anchor:new google.maps.Point(i===0?22:19,i===0?22:19)}, zIndex:10 });
+      _stopMarkers.push(m);
+    });
+
+    const startCoord = coords[idx];
+    if (status === 'Delivered') {
+      const delSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="52" height="52"><circle cx="26" cy="26" r="24" fill="#16a34a" stroke="white" stroke-width="2.5"/><text x="26" y="35" text-anchor="middle" font-size="26" fill="white">✓</text></svg>`;
+      _transportMarker = new google.maps.Marker({ position:coords[total-1], map:_map, icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(delSvg),scaledSize:new google.maps.Size(52,52),anchor:new google.maps.Point(26,26)}, zIndex:25 });
+    } else if (status === 'On Hold') {
+      const holdSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="52" height="52"><circle cx="26" cy="26" r="24" fill="#1d4ed8" stroke="white" stroke-width="2.5"/><rect x="14" y="13" width="9" height="26" rx="3" fill="white"/><rect x="29" y="13" width="9" height="26" rx="3" fill="white"/></svg>`;
+      _transportMarker = new google.maps.Marker({ position:startCoord, map:_map, icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(holdSvg),scaledSize:new google.maps.Size(52,52),anchor:new google.maps.Point(26,26)}, zIndex:25 });
+    } else {
+      placeTransport(startCoord.lat, startCoord.lng, ttype);
+    }
+
+    _pulseOverlay = new _PulseClass(new google.maps.LatLng(startCoord.lat, startCoord.lng));
+    _pulseOverlay.setMap(_map);
+
+    if (status === 'In Transit' && _transportMarker) {
+      const remaining = coords.slice(idx);
+      if (remaining.length >= 2) startAnim(remaining, ttype);
+    }
+
+    const strip = document.getElementById('d-map-strip');
+    if (strip) {
+      const pct = total > 1 ? Math.round((idx / (total-1)) * 100) : 100;
+      strip.textContent = status === 'Delivered' ? `🎉 Delivered · All ${total-1} stops completed` : `Stop ${idx} of ${total-1} · ${pct}% complete`;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+    coords.forEach(c => bounds.extend(c));
+    _map.fitBounds(bounds, { top:80, right:60, bottom:60, left:60 });
+  }
+
+  function placeTransport(lat, lng, type) {
+    const pos  = new google.maps.LatLng(lat, lng);
+    const sizes = { plane:[56,56], ship:[64,44], bus:[72,46], train:[78,46] };
+    const anchors = { plane:[28,28], ship:[32,22], bus:[36,23], train:[39,23] };
+    const [w,h] = sizes[type]||sizes.plane;
+    const [ax,ay] = anchors[type]||anchors.plane;
+    if (_transportMarker) {
+      _transportMarker.setIcon({ url:getTransportSVG(type), scaledSize:new google.maps.Size(w,h), anchor:new google.maps.Point(ax,ay) });
+      _transportMarker.setPosition(pos);
+    } else {
+      _transportMarker = new google.maps.Marker({ position:pos, map:_map, title:'Live Cargo Location', icon:{url:getTransportSVG(type),scaledSize:new google.maps.Size(w,h),anchor:new google.maps.Point(ax,ay)}, animation:google.maps.Animation.DROP, zIndex:20 });
+    }
+  }
+
+  function startAnim(waypoints, type) {
+    if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
+    if (!_transportMarker || waypoints.length < 2) return;
+    const SPEED = 0.035;
+    const segs = waypoints.slice(0,-1).map((_,i) => {
+      const a=waypoints[i], b=waypoints[i+1];
+      const dist = Math.sqrt(Math.pow(b.lat-a.lat,2)+Math.pow(b.lng-a.lng,2));
+      return Math.max(20000, Math.min(dist/SPEED*1000, 180000));
+    });
+    let seg=0, tStart=null;
+    function tick(ts) {
+      if (!_transportMarker || seg >= segs.length) return;
+      if (!tStart) tStart = ts;
+      const rawT = Math.min((ts-tStart)/segs[seg], 1);
+      const eased = rawT<0.5 ? 2*rawT*rawT : 1-Math.pow(-2*rawT+2,2)/2;
+      const isLast = seg === segs.length-1;
+      const t = isLast ? eased*0.95 : eased;
+      const from=waypoints[seg], to=waypoints[seg+1];
+      const pos = new google.maps.LatLng(from.lat+(to.lat-from.lat)*t, from.lng+(to.lng-from.lng)*t);
+      _transportMarker.setPosition(pos);
+      if (_pulseOverlay) _pulseOverlay.moveTo(pos);
+      if (rawT < 1) { _animId = requestAnimationFrame(tick); }
+      else if (!isLast) { _transportMarker.setPosition(new google.maps.LatLng(to.lat,to.lng)); seg++; tStart=null; _animId=requestAnimationFrame(tick); }
+    }
+    _animId = requestAnimationFrame(tick);
+  }
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzf6w-rn68amA_RXuVcSlQ1xBtoB3-iuM&callback=initTrackMap"></script>
+</body>
+</html>

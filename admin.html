@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal — SendFlex Logistics Solution</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { 50:'#e8eaf6', 600:'#071240', 700:'#050A30', 800:'#030820', 900:'#020510' },
+            orange: { 400:'#ffa040', 500:'#FF8C00', 600:'#e67e00' },
+          },
+          fontFamily: { inter:['Inter','sans-serif'], montserrat:['Montserrat','sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Admin-specific styles */
+    .admin-sidebar { width: 260px; min-height: 100vh; flex-shrink: 0; }
+    .admin-main { flex: 1; min-width: 0; }
+    .admin-nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 12px; color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .admin-nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+    .admin-nav-link.active { background: rgba(255,140,0,0.15); color: #FF8C00; border: 1px solid rgba(255,140,0,0.2); }
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    .data-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); padding: 12px 16px; text-align: left; }
+    .data-table td { padding: 14px 16px; font-size: 13px; color: rgba(255,255,255,0.8); border-top: 1px solid rgba(255,255,255,0.06); }
+    .data-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .status-chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; display: inline-block; }
+    .status-chip.green { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .status-chip.orange { background: rgba(255,140,0,0.15); color: #FF8C00; }
+    .status-chip.blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .status-chip.gray { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+    #admin-map { width: 100%; height: 380px; border-radius: 16px; overflow: hidden; }
+  </style>
+</head>
+<body class="font-inter bg-navy-700 text-white" style="background: #050A30;">
+
+  <!-- ======================== LOGIN SCREEN ======================== -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
+      <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(rgba(255,140,0,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,140,0,0.3) 1px, transparent 1px); background-size: 60px 60px;"></div>
+    </div>
+
+    <div class="relative w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-3 mb-6">
+          <img src="Logo.png" alt="SendFlex Logistics Solution" class="h-12 object-contain">
+          <div class="text-left">
+            <div class="text-white/40 text-xs mt-1">Operations Control Centre</div>
+          </div>
+        </div>
+        <h1 class="font-montserrat font-800 text-2xl text-white">Admin Sign In</h1>
+        <p class="text-white/50 text-sm mt-2">Restricted access — authorized personnel only</p>
+      </div>
+
+      <!-- Login Card -->
+      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <form id="login-form" class="space-y-5">
+          <div>
+            <label class="block text-white/70 text-sm font-medium mb-2">Username</label>
+            <input
+              id="admin-username"
+              type="text"
+              placeholder="Enter admin username"
+              class="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-orange-500 focus:bg-white/8 transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-white/70 text-sm font-medium mb-2">Password</label>
+            <div class="relative">
+              <input
+                id="admin-password"
+                type="password"
+                placeholder="Enter password"
+                class="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-orange-500 focus:bg-white/8 transition-all pr-12"
+              />
+              <button type="button" onclick="togglePwdVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
+                <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Error message -->
+          <div id="login-error" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm">
+            ❌ Invalid credentials. Please try again.
+          </div>
+
+          <button
+            type="submit"
+            id="login-btn"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2"
+          >
+            <span id="login-btn-text">Sign In to Admin</span>
+            <div id="login-spinner" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-white/10 text-center">
+          <a href="index.html" class="text-white/40 hover:text-white/70 text-xs transition-colors">← Return to Customer Portal</a>
+        </div>
+      </div>
+
+      <p class="text-center text-white/20 text-xs mt-6">
+        Username: <code class="text-orange-400/70">admin</code> &nbsp;|&nbsp; Password: <code class="text-orange-400/70">SendFlex2026!</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- ======================== ADMIN DASHBOARD ======================== -->
+  <div id="admin-dashboard" style="display:none;min-height:100vh;display:none;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" style="background:rgba(3,8,32,0.95);display:flex;flex-direction:column;padding:16px;position:fixed;top:0;left:0;height:100%;z-index:40;overflow-y:auto;border-right:1px solid rgba(255,255,255,0.05);">
+      <!-- Logo -->
+      <div class="flex items-center gap-3 mb-8 px-2 pt-2">
+        <img src="Logo.png" alt="SendFlex Logistics Solution" class="h-10 object-contain">
+        <div>
+          <div class="text-orange-500 text-[10px] font-bold tracking-wider">ADMIN CENTRE</div>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="flex flex-col gap-1 flex-1">
+        <div class="admin-nav-link active" onclick="showPanel('dashboard')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </div>
+        <div class="admin-nav-link" onclick="showPanel('shipments')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Shipments
+        </div>
+        <div class="admin-nav-link" onclick="showPanel('create')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Shipment
+        </div>
+        <div class="admin-nav-link" onclick="showPanel('live-update')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/></svg>
+          Live Location Update
+        </div>
+        <div class="admin-nav-link" onclick="showPanel('milestones')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          Add Milestone
+        </div>
+        <div class="admin-nav-link" onclick="showPanel('quotes')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          Quote Requests
+        </div>
+      </nav>
+
+      <!-- Sign Out -->
+      <div class="mt-auto pt-4 border-t border-white/5">
+        <div class="text-white/30 text-xs px-2 mb-3">Logged in as <span class="text-orange-400 font-semibold">admin</span></div>
+        <button onclick="adminLogout()" class="admin-nav-link w-full text-red-400/70 hover:text-red-400 hover:bg-red-500/10 text-left">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main" style="margin-left:260px;padding:32px;min-height:100vh;">
+      <!-- Top Bar -->
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 id="panel-title" class="font-montserrat font-800 text-white text-2xl">Dashboard</h2>
+          <p class="text-white/40 text-sm mt-0.5" id="panel-subtitle">Overview of all operations</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold px-3 py-2 rounded-xl">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            Realtime Active
+          </div>
+          <a href="index.html" class="text-white/50 hover:text-white text-xs bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-xl transition-all">← Customer Site</a>
+        </div>
+      </div>
+
+      <!-- ── DASHBOARD PANEL ── -->
+      <div id="panel-dashboard" class="admin-panel active">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-all">
+            <div class="text-white/40 text-xs font-medium uppercase mb-2">Total Shipments</div>
+            <div id="stat-total" class="text-3xl font-montserrat font-900 text-white">—</div>
+            <div class="text-white/30 text-xs mt-1">In database</div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-all">
+            <div class="text-white/40 text-xs font-medium uppercase mb-2">In Transit</div>
+            <div id="stat-transit" class="text-3xl font-montserrat font-900 text-orange-500">—</div>
+            <div class="text-white/30 text-xs mt-1">Active right now</div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-all">
+            <div class="text-white/40 text-xs font-medium uppercase mb-2">Delivered</div>
+            <div id="stat-delivered" class="text-3xl font-montserrat font-900 text-green-400">—</div>
+            <div class="text-white/30 text-xs mt-1">Successfully delivered</div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-all">
+            <div class="text-white/40 text-xs font-medium uppercase mb-2">Quote Requests</div>
+            <div id="stat-quotes" class="text-3xl font-montserrat font-900 text-blue-400">—</div>
+            <div class="text-white/30 text-xs mt-1">Pending sales leads</div>
+          </div>
+        </div>
+
+        <!-- Recent Shipments Table -->
+        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+            <h3 class="font-semibold text-white text-sm">Recent Shipments</h3>
+            <button onclick="showPanel('create')" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">+ New Shipment</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr>
+                <th>Tracking ID</th>
+                <th>Sender</th>
+                <th>Destination</th>
+                <th>Weight</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr></thead>
+              <tbody id="shipments-tbody-dashboard">
+                <tr><td colspan="6" class="text-center text-white/30 py-8">Loading shipments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SHIPMENTS PANEL ── -->
+      <div id="panel-shipments" class="admin-panel">
+        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-wrap gap-3">
+            <h3 class="font-semibold text-white text-sm">All Shipments</h3>
+            <div class="flex gap-2">
+              <input id="search-shipments" type="text" placeholder="Search tracking ID..." class="bg-white/5 border border-white/10 text-white placeholder-white/30 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-500 w-48" />
+              <button onclick="loadAllShipments()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">Refresh</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr>
+                <th>Tracking ID</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Origin → Destination</th>
+                <th>Weight</th>
+                <th>Status</th>
+                <th>Est. Delivery</th>
+                <th>Actions</th>
+              </tr></thead>
+              <tbody id="shipments-tbody-all">
+                <tr><td colspan="8" class="text-center text-white/30 py-8">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CREATE SHIPMENT PANEL ── -->
+      <div id="panel-create" class="admin-panel">
+        <div class="max-w-3xl">
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h3 class="font-semibold text-white mb-6 flex items-center gap-2">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Create New Shipment
+            </h3>
+            <form id="create-shipment-form" class="space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Tracking Number</label>
+                  <input id="cs-tracking" type="text" placeholder="e.g. GFT-2024-010" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" required />
+                  <button type="button" onclick="generateTrackingId()" class="text-orange-400 text-xs mt-1 hover:text-orange-300">⚡ Auto-generate</button>
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Initial Status</label>
+                  <select id="cs-status" class="admin-input w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all">
+                    <option value="Order Placed">Order Placed</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="On Hold">On Hold</option>
+                    <option value="Customs Cleared">Customs Cleared</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Sender Name</label>
+                  <input id="cs-sender" type="text" placeholder="Full name" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Receiver Name</label>
+                  <input id="cs-receiver" type="text" placeholder="Full name" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Origin</label>
+                  <input id="cs-origin" type="text" placeholder="e.g. London, UK" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Destination</label>
+                  <input id="cs-destination" type="text" placeholder="e.g. Lagos, Nigeria" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Latitude</label>
+                  <input id="cs-lat" type="number" step="any" placeholder="e.g. 51.5074" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Longitude</label>
+                  <input id="cs-lng" type="number" step="any" placeholder="e.g. -0.1278" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Weight (kg)</label>
+                  <input id="cs-weight" type="number" step="any" placeholder="e.g. 125" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Est. Delivery Date</label>
+                  <input id="cs-delivery" type="date" class="admin-input w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Description/Contents</label>
+                  <input id="cs-description" type="text" placeholder="e.g. Electronics, Machinery" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+
+              <!-- ─── Logistics Detail Fields (Tracking Card) ─── -->
+              <div class="border-t border-white/10 pt-5">
+                <p class="text-orange-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                  Tracking Card Details <span class="text-white/30 normal-case font-normal">— shown on customer tracking page</span>
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Origin City / Region</label>
+                    <input id="cs-origin-city" type="text" placeholder="e.g. Hangzhou, Zhejiang" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Origin Country</label>
+                    <input id="cs-origin-country" type="text" placeholder="e.g. China" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Destination City / Region</label>
+                    <input id="cs-destination-city" type="text" placeholder="e.g. Berlin" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Destination Country</label>
+                    <input id="cs-destination-country" type="text" placeholder="e.g. Germany" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Distance</label>
+                    <input id="cs-distance" type="text" placeholder="e.g. 4065 km" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">ETA Display</label>
+                    <input id="cs-eta" type="text" placeholder="e.g. 63h or 4 days" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Package Type</label>
+                    <input id="cs-package-type" type="text" placeholder="e.g. Box, Pallet" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Service Type</label>
+                    <input id="cs-service-type" type="text" placeholder="e.g. Express, Standard" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Quantity (pcs)</label>
+                    <input id="cs-quantity" type="number" min="1" placeholder="e.g. 3" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Dimensions (cm)</label>
+                    <input id="cs-dimensions" type="text" placeholder="e.g. 40x40x40" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Declared Value</label>
+                    <input id="cs-declared-value" type="text" placeholder="e.g. $500.00" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Shipping Cost</label>
+                    <input id="cs-shipping-cost" type="text" placeholder="e.g. $40.00" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                  </div>
+                </div>
+              </div>
+
+              <div id="create-error" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm"></div>
+              <div id="create-success" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl px-4 py-3 text-sm"></div>
+
+              <div class="flex gap-3">
+                <button type="submit" id="create-btn" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Create Shipment
+                </button>
+                <button type="button" onclick="document.getElementById('create-shipment-form').reset(); document.getElementById('create-error').classList.add('hidden'); document.getElementById('create-success').classList.add('hidden');" class="bg-white/10 hover:bg-white/20 text-white font-bold py-3.5 px-5 rounded-xl transition-all">
+                  Clear
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LIVE LOCATION UPDATE PANEL ── -->
+      <div id="panel-live-update" class="admin-panel">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <!-- Map -->
+          <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/10">
+              <h3 class="font-semibold text-white text-sm flex items-center gap-2">
+                <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                Click Map to Update Location
+              </h3>
+              <p class="text-white/40 text-xs mt-1">Select a shipment below, then click anywhere on the map to update the live position</p>
+            </div>
+            <div id="admin-map"></div>
+            <div id="map-coords-display" class="px-4 py-3 border-t border-white/10 text-xs text-white/40 font-mono">
+              Selected coords: <span id="selected-lat">—</span>, <span id="selected-lng">—</span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="space-y-4">
+            <!-- Shipment selector -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <label class="block text-white/60 text-xs font-medium mb-3 uppercase tracking-wider">Select Shipment to Update</label>
+              <select id="lu-shipment-select" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 mb-4">
+                <option value="">-- Select shipment --</option>
+              </select>
+
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label class="block text-white/60 text-xs mb-1.5">Latitude</label>
+                  <input id="lu-lat" type="number" step="any" placeholder="e.g. 51.5074" class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs mb-1.5">Longitude</label>
+                  <input id="lu-lng" type="number" step="any" placeholder="e.g. -0.1278" class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500" />
+                </div>
+              </div>
+
+              <button onclick="updateLocation()" id="lu-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/></svg>
+                Update Live Location
+              </button>
+            </div>
+
+            <!-- Status Update -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <label class="block text-white/60 text-xs font-medium mb-3 uppercase tracking-wider">Quick Status Toggle</label>
+              <p class="text-white/40 text-xs mb-3">Real-time push to customer dashboard</p>
+              <div class="grid grid-cols-1 gap-2" id="status-buttons">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+
+            <!-- Update Log -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <h4 class="text-white/60 text-xs font-medium uppercase tracking-wider mb-3">Update Log</h4>
+              <div id="update-log" class="space-y-2 max-h-40 overflow-y-auto">
+                <div class="text-white/30 text-xs">No updates yet...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ADD MILESTONE PANEL ── -->
+      <div id="panel-milestones" class="admin-panel">
+        <div class="max-w-xl">
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h3 class="font-semibold text-white mb-6 flex items-center gap-2">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/></svg>
+              Add Tracking Milestone
+            </h3>
+            <form id="milestone-form" class="space-y-4">
+              <div>
+                <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Shipment</label>
+                <select id="ms-shipment" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" required>
+                  <option value="">-- Select shipment --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Milestone Message</label>
+                <input id="ms-message" type="text" placeholder="e.g. Shipment cleared customs in Dubai" class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" required />
+              </div>
+              <div>
+                <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Location Name</label>
+                <input id="ms-location" type="text" placeholder="e.g. Dubai International Airport" class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
+              </div>
+
+              <!-- Quick templates -->
+              <div>
+                <label class="block text-white/60 text-xs mb-2">Quick Templates:</label>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" onclick="setMilestoneTemplate('Shipment picked up from sender')" class="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all">📦 Picked Up</button>
+                  <button type="button" onclick="setMilestoneTemplate('Passed customs inspection — Cleared')" class="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all">🛃 Customs</button>
+                  <button type="button" onclick="setMilestoneTemplate('Arrived at destination hub')" class="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all">🏭 Hub Arrived</button>
+                  <button type="button" onclick="setMilestoneTemplate('Out for final delivery with courier')" class="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all">🚚 Out for Delivery</button>
+                  <button type="button" onclick="setMilestoneTemplate('Successfully delivered — Signed by recipient')" class="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all">✅ Delivered</button>
+                </div>
+              </div>
+
+              <div id="milestone-result" class="hidden text-sm rounded-xl px-4 py-3"></div>
+
+              <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Milestone (Live Push)
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── QUOTES PANEL ── -->
+      <div id="panel-quotes" class="admin-panel">
+        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+            <h3 class="font-semibold text-white text-sm">Incoming Quote Requests</h3>
+            <button onclick="loadQuotes()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-xl">Refresh</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Destination</th>
+                <th>Weight</th>
+                <th>Message</th>
+                <th>Submitted</th>
+              </tr></thead>
+              <tbody id="quotes-tbody">
+                <tr><td colspan="6" class="text-center text-white/30 py-8">Loading quotes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── Edit Status Modal ── -->
+  <div id="status-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-navy-700 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl" style="background:#050A30;">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-semibold text-white text-base">Update Shipment Status</h3>
+          <p class="text-white/40 text-xs mt-0.5">Tracking: <span id="modal-tracking-id" class="text-orange-400 font-semibold"></span></p>
+        </div>
+        <button onclick="closeStatusModal()" class="text-white/30 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Status Select -->
+      <div class="mb-4">
+        <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">New Status</label>
+        <select id="modal-status" class="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500">
+          <option value="Order Placed">Order Placed</option>
+          <option value="In Transit">In Transit</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Customs Cleared">Customs Cleared</option>
+          <option value="Out for Delivery">Out for Delivery</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+
+      <!-- Status Reason -->
+      <div class="mb-4">
+        <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Status Reason <span class="text-orange-400/60 normal-case font-normal">(optional — shown in email & On Hold box)</span></label>
+        <textarea id="modal-reason" rows="3" placeholder="e.g. Package placed on hold pending customs documentation..." class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 resize-none transition-all"></textarea>
+      </div>
+
+        <!-- Client Email Field -->
+        <div class="mb-4 p-4 rounded-xl border" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.1);">
+          <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">
+            📧 Client Email
+            <span class="text-white/30 normal-case font-normal ml-1">— where notifications are sent</span>
+          </label>
+          <input id="modal-client-email" type="email" placeholder="client@example.com"
+                 class="w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+          <p class="text-white/30 text-xs mt-1.5">✏️ Edit to update the email on file for this shipment</p>
+        </div>
+
+        <!-- ─── NOTIFY CLIENT TOGGLE ─── -->
+        <div class="mb-5 p-4 rounded-xl border" id="notify-toggle-box"
+             style="background:rgba(124,58,237,0.08);border-color:rgba(124,58,237,0.25);">
+        <label class="flex items-center gap-4 cursor-pointer" for="modal-notify-toggle">
+          <!-- Custom toggle switch -->
+          <div class="relative flex-shrink-0" onclick="toggleNotifySwitch()">
+            <input type="checkbox" id="modal-notify-toggle" class="sr-only" />
+            <div id="toggle-track"
+                 style="width:52px;height:28px;border-radius:99px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);transition:all 0.3s;position:relative;cursor:pointer;">
+              <div id="toggle-thumb"
+                   style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.4);transition:all 0.3s;"></div>
+            </div>
+          </div>
+          <div>
+            <p class="text-white font-semibold text-sm" id="notify-label">Notify Client via Email?</p>
+            <p class="text-white/40 text-xs mt-0.5" id="notify-sublabel">Toggle ON to send email notification after saving</p>
+          </div>
+        </label>
+
+        <!-- Email validation alert -->
+        <div id="modal-email-alert" class="hidden mt-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-2.5 text-xs font-medium">
+          ⚠️ No client email on file. Enter the client email in the 📧 field above, then try again.
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button onclick="applyStatusUpdate()" id="modal-apply-btn"
+                class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span id="modal-apply-label">Save Changes</span>
+        </button>
+        <button onclick="closeStatusModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzf6w-rn68amA_RXuVcSlQ1xBtoB3-iuM&callback=initAdminMap"></script>
+</body>
+</html>
