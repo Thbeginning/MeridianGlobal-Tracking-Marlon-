@@ -1131,19 +1131,19 @@
     if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
     if (!_transportMarker || waypoints.length < 2) return;
 
-    // Realistic slow visual speed (seconds per km of real distance)
-    // Plane ~900 km/h, Ship ~35 km/h, Bus ~80 km/h, Train ~120 km/h
-    // Visual scale: 1 real hour = 30 visual seconds for air, adjusted for others
-    const secPerKm = { plane: 0.05, ship: 0.14, bus: 0.09, train: 0.07 }[type] || 0.05;
+    // Realistic slow visual speed: each km of real distance = N ms of animation
+    // Transport type realistic speeds: Air 900km/h, Sea 35km/h, Road 80km/h, Rail 120km/h
+    // Visual scale makes even short routes feel deliberate and slow
+    const secPerKm = { plane: 0.12, ship: 0.30, bus: 0.18, train: 0.14 }[type] || 0.12;
 
     // Calculate actual km per segment using haversine
     const segDistances = waypoints.slice(0,-1).map((_,i) => haversineKmTrack(waypoints[i], waypoints[i+1]));
     const routeKm = segDistances.reduce((a,b) => a+b, 0);
     const refKm   = totalDistKm || routeKm;
 
-    // Minimum 15s per segment, proportional to distance
+    // Minimum 45s per segment so even very short hops look slow and deliberate
     const visualTotalMs = refKm * secPerKm * 1000;
-    const segs = segDistances.map(d => Math.max(15000, (d / Math.max(routeKm,1)) * visualTotalMs));
+    const segs = segDistances.map(d => Math.max(45000, (d / Math.max(routeKm,1)) * visualTotalMs));
 
     let seg = 0, tStart = null, coveredKm = 0;
     const distEl = document.getElementById('d-distance');

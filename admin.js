@@ -241,8 +241,8 @@ function mountDashboard() {
     searchEl.addEventListener('input', e => filterShipments(e.target.value));
   }
 
-  // Auto-calculate distance & ETA when origin / destination / transport type changes
-  ['cs-origin', 'cs-destination'].forEach(id => {
+  // Auto-calculate distance & ETA when origin / destination / transport type / shipped date changes
+  ['cs-origin', 'cs-destination', 'cs-shipped-date'].forEach(id => {
     document.getElementById(id)?.addEventListener('blur', autoCalcDistanceETA);
   });
   document.getElementById('cs-transport')?.addEventListener('change', autoCalcDistanceETA);
@@ -1420,8 +1420,10 @@ async function autoCalcDistanceETA() {
   const origin      = document.getElementById('cs-origin')?.value.trim();
   const destination = document.getElementById('cs-destination')?.value.trim();
   const transportType = document.getElementById('cs-transport')?.value || 'plane';
-  const distField   = document.getElementById('cs-distance');
-  const etaField    = document.getElementById('cs-eta');
+  const distField     = document.getElementById('cs-distance');
+  const etaField      = document.getElementById('cs-eta');
+  const deliveryField = document.getElementById('cs-delivery');
+  const shippedDate   = document.getElementById('cs-shipped-date')?.value;
 
   if (!origin || !destination || origin.length < 3 || destination.length < 3) return;
 
@@ -1453,9 +1455,23 @@ async function autoCalcDistanceETA() {
     else                 etaStr = `${Math.ceil(hours / 24)} days`;
 
     if (distField) { distField.value = `${distKm.toLocaleString()} km`; distField.placeholder = 'e.g. 4065 km'; }
-    if (etaField)  { etaField.value  = etaStr;                           etaField.placeholder  = 'e.g. 63h or 4 days'; }
+    if (etaField)  { etaField.value  = etaStr; etaField.placeholder  = 'e.g. 63h or 4 days'; }
 
-    toast(`📐 Auto-calculated — Distance: ${distKm.toLocaleString()} km · ETA (${transportType}): ${etaStr}`);
+    // ── Auto-calculate Estimated Arrival Date ──
+    // Use the admin-entered shipped date; fall back to today if not set
+    const baseDate = shippedDate ? new Date(shippedDate + 'T00:00:00') : new Date();
+    const arrivalDate = new Date(baseDate.getTime() + hours * 3600 * 1000);
+    const arrivalISO  = arrivalDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    if (deliveryField && !deliveryField.value) {
+      // Only auto-fill if not already manually set
+      deliveryField.value = arrivalISO;
+    } else if (deliveryField) {
+      // If shipped date changed, always update
+      deliveryField.value = arrivalISO;
+    }
+
+    const arrivalDisplay = arrivalDate.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+    toast(`📐 Auto-calculated — ${distKm.toLocaleString()} km · ETA: ${etaStr} · Arrival: ${arrivalDisplay}`);
   } catch (err) {
     if (distField) distField.placeholder = 'e.g. 4065 km';
     if (etaField)  etaField.placeholder  = 'e.g. 63h or 4 days';
