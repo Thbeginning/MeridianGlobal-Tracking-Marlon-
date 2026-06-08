@@ -1,8 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
-const FROM_EMAIL    = Deno.env.get("FROM_EMAIL") ?? "no-reply@globalfreighttrace.com";
-const FROM_NAME     = "GlobalFreight Trace";
+const FROM_EMAIL    = Deno.env.get("FROM_EMAIL") ?? "christrackingwebsite@gmail.com";
+const FROM_NAME     = Deno.env.get("FROM_NAME")  ?? "SendFlex Track";
 const WEB_URL       = Deno.env.get("WEB_URL") ?? "https://globalfreighttrace.com";
 
 // ── Status helpers ──────────────────────────────────────────────────────────
