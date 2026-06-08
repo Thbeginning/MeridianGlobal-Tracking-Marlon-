@@ -1032,7 +1032,7 @@ async function updateLocation() {
 // -------------------------------------
 function renderStatusBtns() {
   const statuses = ['Order Placed','In Transit','Customs Cleared','Out for Delivery','Delivered'];
-  const icons = { 'Order Placed':'??','In Transit':'??','Customs Cleared':'??','Out for Delivery':'??','Delivered':'?' };
+  const icons = { 'Order Placed':'📋','In Transit':'✈️','Customs Cleared':'🛃','Out for Delivery':'🚚','Delivered':'✅' };
   const el = document.getElementById('status-buttons');
   if (!el) return;
   el.innerHTML = statuses.map(s => `
