@@ -640,13 +640,24 @@
       } catch(e) { console.warn('Barcode:', e); }
     }
 
-    // Card 2
+    // Card 2 — Sender / Receiver
     set('d-from-name',    s.sender_name);
     set('d-from-city',    s.origin_city    || s.origin);
     set('d-from-country', s.origin_country);
+    set('d-from-phone',   s.sender_phone   || '—');
     set('d-to-name',      s.receiver_name);
     set('d-to-city',      s.destination_city    || s.destination);
     set('d-to-country',   s.destination_country);
+    set('d-to-phone',     s.receiver_phone  || '—');
+    // Receiver email — clickable mailto link
+    const toEmailEl = $('d-to-email');
+    if (toEmailEl) {
+      if (s.receiver_email) {
+        toEmailEl.innerHTML = `<a href="mailto:${s.receiver_email}" style="color:#2563eb;text-decoration:underline;">${s.receiver_email}</a>`;
+      } else {
+        toEmailEl.textContent = '—';
+      }
+    }
 
     // Card 3
     set('d-distance', s.distance_km  || '—');
@@ -660,8 +671,10 @@
     set('d-pkg-type',     s.package_type);
     set('d-pkg-weight',   s.weight    ? `${s.weight} kg` : '—');
     
-    if (s.created_at) {
-      const d = new Date(s.created_at);
+    // Use admin-set shipped_date first, fall back to created_at
+    const shippedRaw = s.shipped_date || s.created_at;
+    if (shippedRaw) {
+      const d = new Date(shippedRaw);
       set('d-pkg-shipped', d.toLocaleDateString('en-US', { month:'short', day:'2-digit', year:'numeric' }));
     } else { set('d-pkg-shipped', '—'); }
 

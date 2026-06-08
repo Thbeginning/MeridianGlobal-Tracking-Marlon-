@@ -1285,7 +1285,10 @@ document.getElementById('create-shipment-form')?.addEventListener('submit', asyn
     status:           document.getElementById('cs-status').value,
     transport_type:   document.getElementById('cs-transport')?.value || 'plane',
     sender_name:      document.getElementById('cs-sender').value.trim() || null,
+    sender_phone:     document.getElementById('cs-sender-phone')?.value.trim() || null,
     receiver_name:    document.getElementById('cs-receiver').value.trim() || null,
+    receiver_phone:   document.getElementById('cs-receiver-phone')?.value.trim() || null,
+    receiver_email:   document.getElementById('cs-receiver-email')?.value.trim() || null,
     origin:           document.getElementById('cs-origin').value.trim() || null,
     destination:      document.getElementById('cs-destination').value.trim() || null,
     lat:              parseFloat(document.getElementById('cs-lat').value) || null,
@@ -1295,6 +1298,7 @@ document.getElementById('create-shipment-form')?.addEventListener('submit', asyn
     description:      document.getElementById('cs-description').value.trim() || null,
     client_email:     document.getElementById('cs-email')?.value.trim() || null,
     status_reason:    document.getElementById('cs-reason')?.value.trim() || null,
+    shipped_date:     document.getElementById('cs-shipped-date')?.value || null,
     // -- New tracking card detail fields --
     origin_city:      document.getElementById('cs-origin-city')?.value.trim() || null,
     origin_country:   document.getElementById('cs-origin-country')?.value.trim() || null,

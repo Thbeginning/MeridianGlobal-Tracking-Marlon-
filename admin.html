@@ -298,8 +298,28 @@
                   <input id="cs-sender" type="text" placeholder="Full name" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
                 </div>
                 <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Sender Phone</label>
+                  <input id="cs-sender-phone" type="tel" placeholder="e.g. +86 123 456 7890" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
                   <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Receiver Name</label>
                   <input id="cs-receiver" type="text" placeholder="Full name" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Receiver Phone</label>
+                  <input id="cs-receiver-phone" type="tel" placeholder="e.g. +49 30 123 456" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Receiver Email <span class="text-orange-400/60 normal-case font-normal">(shown on tracking page)</span></label>
+                  <input id="cs-receiver-email" type="email" placeholder="receiver@example.com" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Client Email <span class="text-orange-400/60 normal-case font-normal">(for notifications)</span></label>
+                  <input id="cs-email" type="email" placeholder="client@example.com" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
                 </div>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -324,6 +344,21 @@
                 <div>
                   <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Weight (kg)</label>
                   <input id="cs-weight" type="number" step="any" placeholder="e.g. 125" class="admin-input w-full bg-white/5 border border-white/10 text-white placeholder-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Transport Type</label>
+                  <select id="cs-transport" class="admin-input w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all">
+                    <option value="plane">✈️ Air Freight</option>
+                    <option value="ship">🚢 Sea Freight</option>
+                    <option value="bus">🚌 Road Freight</option>
+                    <option value="train">🚂 Rail Freight</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-white/60 text-xs font-medium mb-2 uppercase tracking-wider">Shipped Date <span class="text-orange-400/60 normal-case font-normal">(shown on tracking card)</span></label>
+                  <input id="cs-shipped-date" type="date" class="admin-input w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 transition-all" />
                 </div>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
