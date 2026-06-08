@@ -1118,7 +1118,6 @@
     }
   }
 
-  // Haversine distance in km between two {lat,lng} points
   function haversineKmTrack(a, b) {
     const R = 6371;
     const dLat = (b.lat - a.lat) * Math.PI / 180;
@@ -1131,22 +1130,26 @@
     if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
     if (!_transportMarker || waypoints.length < 2) return;
 
-    // Realistic slow visual speed: each km of real distance = N ms of animation
-    // Transport type realistic speeds: Air 900km/h, Sea 35km/h, Road 80km/h, Rail 120km/h
-    // Visual scale makes even short routes feel deliberate and slow
     const secPerKm = { plane: 0.12, ship: 0.30, bus: 0.18, train: 0.14 }[type] || 0.12;
-
-    // Calculate actual km per segment using haversine
     const segDistances = waypoints.slice(0,-1).map((_,i) => haversineKmTrack(waypoints[i], waypoints[i+1]));
     const routeKm = segDistances.reduce((a,b) => a+b, 0);
     const refKm   = totalDistKm || routeKm;
-
-    // Minimum 45s per segment so even very short hops look slow and deliberate
     const visualTotalMs = refKm * secPerKm * 1000;
     const segs = segDistances.map(d => Math.max(45000, (d / Math.max(routeKm,1)) * visualTotalMs));
 
+    const realSpeedKmH = { plane: 900, ship: 35, bus: 80, train: 120 }[type] || 900;
     let seg = 0, tStart = null, coveredKm = 0;
     const distEl = document.getElementById('d-distance');
+    const etaEl  = document.getElementById('d-eta');
+    const etaSub = document.getElementById('d-eta-sub');
+
+    function fmtETA(hours) {
+      if (hours <= 0)   return 'Arriving';
+      if (hours < 1/60) return '< 1 min';
+      if (hours < 1)    return `${Math.round(hours * 60)} min`;
+      if (hours < 48)   return `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}min`;
+      return `${Math.ceil(hours / 24)} days`;
+    }
 
     function tick(ts) {
       if (!_transportMarker || seg >= segs.length) return;
@@ -1161,11 +1164,14 @@
       _transportMarker.setPosition(pos);
       if (_pulseOverlay) _pulseOverlay.moveTo(pos);
 
-      // Live-update the distance-remaining counter
-      if (distEl) {
-        const segProgress = coveredKm + segDistances[seg] * rawT;
-        const remaining   = Math.max(0, Math.round(refKm - segProgress));
-        distEl.textContent = remaining.toLocaleString() + ' km';
+      const segProgress = coveredKm + segDistances[seg] * rawT;
+      const remainingKm = Math.max(0, refKm - segProgress);
+
+      if (distEl) distEl.textContent = Math.round(remainingKm).toLocaleString() + ' km';
+      if (etaEl) {
+        const remainingHours = remainingKm / realSpeedKmH;
+        etaEl.textContent = fmtETA(remainingHours);
+        if (etaSub) etaSub.textContent = remainingHours <= 0 ? '\uD83C\uDF89 Destination reached!' : 'Time remaining';
       }
 
       if (rawT < 1) {
