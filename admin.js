@@ -1437,8 +1437,8 @@ function openEditModal(id) {
   document.getElementById('edit-transport').value         = s.transport_type || 'plane';
   document.getElementById('edit-shipped-date').value      = s.shipped_date || '';
   document.getElementById('edit-delivery').value          = s.estimated_delivery || '';
-  document.getElementById('edit-distance').value          = s.distance || '';
-  document.getElementById('edit-eta').value               = s.eta || '';
+  document.getElementById('edit-distance').value          = s.distance_km || '';
+  document.getElementById('edit-eta').value               = s.eta_display || '';
   document.getElementById('edit-package-type').value      = s.package_type || '';
   document.getElementById('edit-service-type').value      = s.service_type || '';
   document.getElementById('edit-quantity').value          = s.quantity || '';
@@ -1483,18 +1483,18 @@ async function saveEditShipment() {
     transport_type:       document.getElementById('edit-transport').value,
     shipped_date:         document.getElementById('edit-shipped-date').value || null,
     estimated_delivery:   document.getElementById('edit-delivery').value || null,
-    distance:             document.getElementById('edit-distance').value.trim(),
-    eta:                  document.getElementById('edit-eta').value.trim(),
-    package_type:         document.getElementById('edit-package-type').value.trim(),
-    service_type:         document.getElementById('edit-service-type').value.trim(),
+    distance_km:          document.getElementById('edit-distance').value.trim() || null,
+    eta_display:          document.getElementById('edit-eta').value.trim() || null,
+    package_type:         document.getElementById('edit-package-type').value.trim() || null,
+    service_type:         document.getElementById('edit-service-type').value.trim() || null,
     quantity:             parseInt(document.getElementById('edit-quantity').value) || null,
-    dimensions:           document.getElementById('edit-dimensions').value.trim(),
-    declared_value:       document.getElementById('edit-declared-value').value.trim(),
-    shipping_cost:        document.getElementById('edit-shipping-cost').value.trim(),
-    origin_city:          document.getElementById('edit-origin-city').value.trim(),
-    origin_country:       document.getElementById('edit-origin-country').value.trim(),
-    destination_city:     document.getElementById('edit-destination-city').value.trim(),
-    destination_country:  document.getElementById('edit-destination-country').value.trim(),
+    dimensions:           document.getElementById('edit-dimensions').value.trim() || null,
+    declared_value:       document.getElementById('edit-declared-value').value.trim() || null,
+    shipping_cost:        document.getElementById('edit-shipping-cost').value.trim() || null,
+    origin_city:          document.getElementById('edit-origin-city').value.trim() || null,
+    origin_country:       document.getElementById('edit-origin-country').value.trim() || null,
+    destination_city:     document.getElementById('edit-destination-city').value.trim() || null,
+    destination_country:  document.getElementById('edit-destination-country').value.trim() || null,
     updated_at:           new Date().toISOString(),
   };
 
