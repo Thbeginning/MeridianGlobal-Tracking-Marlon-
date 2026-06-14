@@ -1082,6 +1082,49 @@ async function quickStatus(status) {
  * @param {object} shipmentData  - Full shipment row data
  * @param {boolean} shouldNotify - true = send email after DB save
  */
+// ── Unmissable result dialog ────────────────────────────────────────────────
+function showEmailResultDialog({ success, email, tracking, errMsg }) {
+  // Remove any existing dialog
+  document.getElementById('gft-email-result-dialog')?.remove();
+
+  const dlg = document.createElement('div');
+  dlg.id = 'gft-email-result-dialog';
+  dlg.style.cssText = [
+    'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;',
+    'background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);padding:24px;'
+  ].join('');
+
+  const icon   = success ? '✅' : '❌';
+  const title  = success ? 'Email Sent Successfully!' : 'Email Failed to Send';
+  const body   = success
+    ? `The notification email has been dispatched to <strong style="color:#FF8C00">${email}</strong>.<br><br>
+       📬 <strong>Please check the Inbox AND the Spam/Junk folder</strong> — emails from new senders sometimes land in spam the first time.`
+    : `Status was saved to the database, but the email could not be sent.<br><br>
+       <strong>Error:</strong> <code style="color:#f87171">${errMsg || 'Unknown error'}</code><br><br>
+       Check the browser Console (F12 → Console) for details tagged <code>[GFT]</code>.`;
+  const btnColor = success ? '#22c55e' : '#ef4444';
+
+  dlg.innerHTML = `
+    <div style="background:#0d1030;border:1px solid ${success ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'};
+                border-radius:20px;padding:40px;max-width:460px;width:100%;text-align:center;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+      <div style="font-size:52px;margin-bottom:16px;">${icon}</div>
+      <h3 style="color:#fff;font-size:20px;font-weight:700;margin:0 0 12px;">${title}</h3>
+      <p style="color:rgba(255,255,255,0.65);font-size:14px;line-height:1.7;margin:0 0 28px;">${body}</p>
+      <p style="color:rgba(255,255,255,0.35);font-size:12px;margin:0 0 24px;">Shipment: <strong style="color:#FF8C00">${tracking}</strong></p>
+      <button onclick="document.getElementById('gft-email-result-dialog').remove()"
+              style="background:${btnColor};color:#fff;font-weight:700;font-size:14px;
+                     border:none;padding:12px 40px;border-radius:12px;cursor:pointer;
+                     width:100%;transition:opacity 0.2s;"
+              onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        OK, Got It
+      </button>
+    </div>`;
+
+  document.body.appendChild(dlg);
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.remove(); });
+}
+
 async function handleUpdateWithEmail(shipmentData, shouldNotify) {
   const { id, status, status_reason, tracking_number, updated_at, client_email } = shipmentData;
 
@@ -1093,7 +1136,8 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
   }).eq('id', id);
 
   if (error) {
-    toast('❌ DB save failed: ' + error.message, true);
+    showEmailResultDialog({ success: false, email: client_email, tracking: tracking_number, errMsg: 'DB save failed: ' + error.message });
+    resetApplyBtn();
     return;
   }
 
@@ -1102,16 +1146,16 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
     if (!client_email) {
       toast('⚠️ Status saved but no client email on file — no email sent.', true);
       log(`⚠️ ${tracking_number}: status → ${status} (no email on file)`);
+      resetApplyBtn();
       loadShipments();
       return;
     }
 
-    // Show sending indicator in the toast area
     toast(`📧 Sending email to ${client_email}…`);
 
     try {
-      console.log('[GFT] Calling edge function:', EDGE_FUNCTION_URL);
-      console.log('[GFT] Payload:', { tracking_number, status, status_reason, client_email });
+      console.log('[GFT] ▶ Calling edge function:', EDGE_FUNCTION_URL);
+      console.log('[GFT] ▶ Payload:', { tracking_number, status, status_reason, client_email });
 
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
@@ -1130,31 +1174,31 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
       });
 
       const responseText = await res.text();
-      console.log('[GFT] Edge function response status:', res.status);
-      console.log('[GFT] Edge function response body:', responseText);
+      console.log('[GFT] ◀ Status:', res.status, '| Body:', responseText);
 
       let resData = {};
       try { resData = JSON.parse(responseText); } catch (_) {}
 
       if (res.ok && resData.success) {
-        toast('✅ Shipment Updated & Client Notified Successfully! 📧');
         log(`✅ ${tracking_number}: status → ${status} | Email sent to ${client_email}`);
+        showEmailResultDialog({ success: true, email: client_email, tracking: tracking_number });
       } else {
         const errMsg = resData.error || res.statusText || `HTTP ${res.status}`;
-        toast(`⚠️ Status saved, but email failed: ${errMsg}`, true);
         log(`⚠️ ${tracking_number}: status → ${status} | Email error: ${errMsg}`);
-        console.error('[GFT] Email send failed:', resData);
+        console.error('[GFT] ✗ Email send failed:', resData);
+        showEmailResultDialog({ success: false, email: client_email, tracking: tracking_number, errMsg });
       }
     } catch (fetchErr) {
-      toast('⚠️ Status saved, but network error sending email. Check browser console.', true);
-      console.error('[GFT] Email fetch error (network/CORS):', fetchErr);
-      log(`⚠️ ${tracking_number}: status saved but email network error`);
+      console.error('[GFT] ✗ Network/CORS error:', fetchErr);
+      log(`⚠️ ${tracking_number}: network error sending email`);
+      showEmailResultDialog({ success: false, email: client_email, tracking: tracking_number, errMsg: fetchErr.message || 'Network error — check console' });
     }
   } else {
     toast(`✅ ${tracking_number} → "${status}" saved.`);
     log(`✅ ${tracking_number}: status → ${status} (no email sent)`);
   }
 
+  resetApplyBtn();
   loadShipments();
 }
 
@@ -1298,10 +1342,18 @@ async function applyStatusUpdate() {
   }, shouldNotify);
 }
 
+function resetApplyBtn() {
+  const btn = document.getElementById('modal-apply-btn');
+  const lbl = document.getElementById('modal-apply-label');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  if (lbl) lbl.textContent = 'Save Changes';
+}
+
 function closeStatusModal() {
   document.getElementById('status-modal').classList.add('hidden');
   modalShipmentId  = null;
   modalClientEmail = null;
+  resetApplyBtn();
 }
 
 document.getElementById('status-modal')?.addEventListener('click', e => {
