@@ -188,20 +188,23 @@ function buildEmailHtml(p: {
 </html>`;
 }
 
+// ── CORS headers (applied to every response) ────────────────────────────────
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+  "Access-Control-Max-Age": "86400",
+};
+
 // ── Main handler ─────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
+  // Handle CORS preflight — must return 200 with CORS headers, not 204
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
+    return new Response(null, { status: 200, headers: CORS_HEADERS });
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: CORS_HEADERS });
   }
 
   let body: Record<string, unknown>;
@@ -210,7 +213,7 @@ Deno.serve(async (req: Request) => {
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -225,19 +228,19 @@ Deno.serve(async (req: Request) => {
   if (!shipment.client_email) {
     return new Response(JSON.stringify({ error: "No client_email on shipment" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
   if (!shipment.tracking_number) {
     return new Response(JSON.stringify({ error: "No tracking_number on shipment" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
   if (!BREVO_API_KEY) {
     return new Response(JSON.stringify({ error: "BREVO_API_KEY not configured" }), {
       status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -272,7 +275,7 @@ Deno.serve(async (req: Request) => {
     const errMsg = brevoData?.message || brevoData?.error || "Email send failed";
     return new Response(JSON.stringify({ error: errMsg, detail: brevoData }), {
       status: 502,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
 
@@ -280,6 +283,6 @@ Deno.serve(async (req: Request) => {
 
   return new Response(JSON.stringify({ success: true, messageId: brevoData.messageId }), {
     status: 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 });

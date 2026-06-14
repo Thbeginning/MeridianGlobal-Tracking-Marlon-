@@ -1093,25 +1093,32 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
   }).eq('id', id);
 
   if (error) {
-    toast('? DB save failed: ' + error.message, true);
+    toast('❌ DB save failed: ' + error.message, true);
     return;
   }
 
   // -- 2. Conditionally send email --
   if (shouldNotify) {
     if (!client_email) {
-      toast('?? Status saved but no email found for this shipment.', true);
-      log(`? ${tracking_number}: status ? ${status} (no email)`);
+      toast('⚠️ Status saved but no client email on file — no email sent.', true);
+      log(`⚠️ ${tracking_number}: status → ${status} (no email on file)`);
       loadShipments();
       return;
     }
 
+    // Show sending indicator in the toast area
+    toast(`📧 Sending email to ${client_email}…`);
+
     try {
+      console.log('[GFT] Calling edge function:', EDGE_FUNCTION_URL);
+      console.log('[GFT] Payload:', { tracking_number, status, status_reason, client_email });
+
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({
           tracking_number,
@@ -1122,22 +1129,30 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
         }),
       });
 
-      if (res.ok) {
-        toast('? Shipment Updated & Client Notified Successfully! ??');
-        log(`? ${tracking_number}: status ? ${status} | Email sent to ${client_email}`);
+      const responseText = await res.text();
+      console.log('[GFT] Edge function response status:', res.status);
+      console.log('[GFT] Edge function response body:', responseText);
+
+      let resData = {};
+      try { resData = JSON.parse(responseText); } catch (_) {}
+
+      if (res.ok && resData.success) {
+        toast('✅ Shipment Updated & Client Notified Successfully! 📧');
+        log(`✅ ${tracking_number}: status → ${status} | Email sent to ${client_email}`);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        toast('?? Status saved, but email failed: ' + (errData.error || res.statusText), true);
-        log(`?? ${tracking_number}: status ? ${status} | Email error: ${errData.error || res.statusText}`);
+        const errMsg = resData.error || res.statusText || `HTTP ${res.status}`;
+        toast(`⚠️ Status saved, but email failed: ${errMsg}`, true);
+        log(`⚠️ ${tracking_number}: status → ${status} | Email error: ${errMsg}`);
+        console.error('[GFT] Email send failed:', resData);
       }
     } catch (fetchErr) {
-      toast('?? Status saved, but email request failed. Check console.', true);
-      console.error('Email fetch error:', fetchErr);
-      log(`?? ${tracking_number}: status saved but email fetch failed`);
+      toast('⚠️ Status saved, but network error sending email. Check browser console.', true);
+      console.error('[GFT] Email fetch error (network/CORS):', fetchErr);
+      log(`⚠️ ${tracking_number}: status saved but email network error`);
     }
   } else {
-    toast(`? ${tracking_number} ? "${status}" saved silently.`);
-    log(`? ${tracking_number}: status ? ${status} (no email)`);
+    toast(`✅ ${tracking_number} → "${status}" saved.`);
+    log(`✅ ${tracking_number}: status → ${status} (no email sent)`);
   }
 
   loadShipments();
@@ -1196,7 +1211,7 @@ function toggleNotifySwitch() {
 // -------------------------------------
 function openModal(id, trackingNum, currentStatus) {
   if (!id || id === 'null' || id === 'undefined') {
-    toast('? Cannot open modal: shipment ID is missing.', true);
+    toast('❌ Cannot open modal: shipment ID is missing.', true);
     return;
   }
   modalShipmentId = id;
@@ -1228,7 +1243,6 @@ function openModal(id, trackingNum, currentStatus) {
   const applyBtn = document.getElementById('modal-apply-btn');
   if (applyBtn) applyBtn.style.background = '#FF8C00';
   document.getElementById('modal-email-alert')?.classList.add('hidden');
-
   document.getElementById('status-modal').classList.remove('hidden');
 }
 
@@ -1237,34 +1251,42 @@ async function applyStatusUpdate() {
   const status_reason = document.getElementById('modal-reason').value.trim();
   const shouldNotify  = document.getElementById('modal-notify-toggle')?.checked || false;
 
-  if (!modalShipmentId) { toast('? No shipment selected.', true); return; }
+  if (!modalShipmentId) { toast('❌ No shipment selected.', true); return; }
 
   // -- Capture ID and email into locals BEFORE closing the modal
-  // (closeStatusModal nulls out modalShipmentId, so we must snapshot it first)
-  const shipmentId    = modalShipmentId;
-  let   activeEmail   = modalClientEmail;
+  const shipmentId  = modalShipmentId;
+  let   activeEmail = modalClientEmail;
 
-  // -- Pick up email from modal input field (CEO may have just typed it)
+  // -- Pick up email from modal input field (admin may have just typed it)
   const emailInputEl = document.getElementById('modal-client-email');
   const enteredEmail = emailInputEl?.value.trim() || null;
 
   // If a new email was entered, save it to DB now
   if (enteredEmail && enteredEmail !== activeEmail) {
-    await db.from('shipments').update({ client_email: enteredEmail }).eq('id', shipmentId);
-    activeEmail = enteredEmail;
+    const { error: emailErr } = await db.from('shipments').update({ client_email: enteredEmail }).eq('id', shipmentId);
+    if (!emailErr) activeEmail = enteredEmail;
   }
 
   // Validate: notify ON but still no email?
   if (shouldNotify && !activeEmail) {
     document.getElementById('modal-email-alert')?.classList.remove('hidden');
-    toast('?? No client email on file. Add an email below the toggle before notifying.', true);
+    toast('⚠️ No client email on file. Add an email before sending notification.', true);
     return;
+  }
+
+  // Disable apply button to prevent double-click
+  const applyBtn = document.getElementById('modal-apply-btn');
+  const applyLbl = document.getElementById('modal-apply-label');
+  if (applyBtn) {
+    applyBtn.disabled = true;
+    applyBtn.style.opacity = '0.6';
+    if (applyLbl) applyLbl.textContent = shouldNotify ? 'Saving & Sending…' : 'Saving…';
   }
 
   const shipment = allShipments.find(s => s.id === shipmentId);
   const tracking_number = shipment?.tracking_number || shipmentId;
 
-  closeStatusModal(); // ? safe to close now; we already have local copies
+  closeStatusModal();
 
   await handleUpdateWithEmail({
     id: shipmentId,
