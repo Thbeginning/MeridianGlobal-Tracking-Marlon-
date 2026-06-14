@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL    = Deno.env.get("FROM_EMAIL") ?? "info@sendflexlogisticssolution.com";
 const FROM_NAME     = Deno.env.get("FROM_NAME")  ?? "SendFlex Track";
 const WEB_URL       = Deno.env.get("WEB_URL") ?? "https://sendflexlogisticssolution.com";
@@ -237,8 +237,8 @@ Deno.serve(async (req: Request) => {
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
-  if (!BREVO_API_KEY) {
-    return new Response(JSON.stringify({ error: "BREVO_API_KEY not configured" }), {
+  if (!RESEND_API_KEY) {
+    return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
@@ -253,27 +253,31 @@ Deno.serve(async (req: Request) => {
 
   const subject = `${shipment.icon ?? "📦"} Shipment ${shipment.tracking_number} — ${shipment.status}`;
 
-  const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+  // Use the verified domain email or onboarding email
+  // Note: To send to ANY email address, FROM_EMAIL must be a verified domain in Resend
+  const fromAddress = `${FROM_NAME} <${FROM_EMAIL}>`;
+
+  const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      "api-key":      BREVO_API_KEY,
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      sender:      { name: FROM_NAME, email: FROM_EMAIL },
-      to:          [{ email: shipment.client_email }],
-      replyTo:     { email: "info@sendflexlogisticssolution.com" },
-      subject,
-      htmlContent: html,
+      from: fromAddress,
+      to: shipment.client_email,
+      reply_to: "info@sendflexlogisticssolution.com",
+      subject: subject,
+      html: html,
     }),
   });
 
-  const brevoData = await brevoRes.json();
+  const resendData = await resendRes.json();
 
-  if (!brevoRes.ok) {
-    console.error(`Brevo error (${brevoRes.status}):`, JSON.stringify(brevoData));
-    const errMsg = brevoData?.message || brevoData?.error || "Email send failed";
-    return new Response(JSON.stringify({ error: errMsg, detail: brevoData }), {
+  if (!resendRes.ok) {
+    console.error(`Resend error (${resendRes.status}):`, JSON.stringify(resendData));
+    const errMsg = resendData?.message || resendData?.error || "Email send failed";
+    return new Response(JSON.stringify({ error: errMsg, detail: resendData }), {
       status: 502,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
@@ -281,7 +285,7 @@ Deno.serve(async (req: Request) => {
 
   console.log(`✅ Email sent to ${shipment.client_email} for ${shipment.tracking_number}`);
 
-  return new Response(JSON.stringify({ success: true, messageId: brevoData.messageId }), {
+  return new Response(JSON.stringify({ success: true, messageId: resendData.id }), {
     status: 200,
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
