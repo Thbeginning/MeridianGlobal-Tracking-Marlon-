@@ -1092,7 +1092,7 @@
         // Calculate real total route distance for accurate speed pacing
         let totalKm = 0;
         for (let i = 0; i < coords.length - 1; i++) totalKm += haversineKmTrack(coords[i], coords[i+1]);
-        startAnim(remaining, ttype, totalKm);
+        startAnim(remaining, ttype, totalKm, shipment);
       }
     }
 
@@ -1129,19 +1129,19 @@
     return R * 2 * Math.asin(Math.sqrt(h));
   }
 
-  function startAnim(waypoints, type, totalDistKm) {
+  function startAnim(waypoints, type, totalDistKm, shipment) {
     if (_animId) { cancelAnimationFrame(_animId); _animId = null; }
     if (!_transportMarker || waypoints.length < 2) return;
 
-    const secPerKm = { plane: 0.12, ship: 0.30, bus: 0.18, train: 0.14 }[type] || 0.12;
-    const segDistances = waypoints.slice(0,-1).map((_,i) => haversineKmTrack(waypoints[i], waypoints[i+1]));
-    const routeKm = segDistances.reduce((a,b) => a+b, 0);
-    const refKm   = totalDistKm || routeKm;
-    const visualTotalMs = refKm * secPerKm * 1000;
-    const segs = segDistances.map(d => Math.max(45000, (d / Math.max(routeKm,1)) * visualTotalMs));
+    const realSpeedKmH = { plane: 900, ship: 40, bus: 80, train: 120 }[type] || 900;
+    const speedKmPerMs = realSpeedKmH / 3600000;
 
-    const realSpeedKmH = { plane: 900, ship: 35, bus: 80, train: 120 }[type] || 900;
-    let seg = 0, tStart = null, coveredKm = 0;
+    const segDistances = waypoints.slice(0,-1).map((_,i) => haversineKmTrack(waypoints[i], waypoints[i+1]));
+    const routeKm = totalDistKm || segDistances.reduce((a,b) => a+b, 0) || 1;
+    const totalTripMs = routeKm / speedKmPerMs;
+
+    const shippedTime = (shipment && shipment.shipped_date) ? new Date(shipment.shipped_date).getTime() : Date.now();
+    
     const distEl = document.getElementById('d-distance');
     const etaEl  = document.getElementById('d-eta');
     const etaSub = document.getElementById('d-eta-sub');
@@ -1154,37 +1154,53 @@
       return `${Math.ceil(hours / 24)} days`;
     }
 
-    function tick(ts) {
-      if (!_transportMarker || seg >= segs.length) return;
-      if (!tStart) tStart = ts;
-      const rawT  = Math.min((ts - tStart) / segs[seg], 1);
-      const eased = rawT < 0.5 ? 2*rawT*rawT : 1 - Math.pow(-2*rawT+2, 2)/2;
-      const isLast = seg === segs.length - 1;
-      const t = isLast ? eased * 0.95 : eased;
+    function tick() {
+      if (!_transportMarker) return;
+      
+      const now = Date.now();
+      let elapsedMs = now - shippedTime;
+      if (elapsedMs < 0) elapsedMs = 0;
+      
+      let currentProgress = elapsedMs / totalTripMs;
+      // Cap at 99.9% so it doesn't say 0km until officially marked "Delivered"
+      if (currentProgress > 0.999) currentProgress = 0.999;
+
+      const coveredKm = currentProgress * routeKm;
+      const remainingKm = Math.max(0, routeKm - coveredKm);
+
+      let accum = 0;
+      let seg = 0;
+      let segRawT = 0;
+      for (let i = 0; i < segDistances.length; i++) {
+        if (accum + segDistances[i] >= coveredKm) {
+          seg = i;
+          segRawT = (coveredKm - accum) / (segDistances[i] || 1);
+          break;
+        }
+        accum += segDistances[i];
+      }
+      if (seg >= waypoints.length - 1) {
+        seg = waypoints.length - 2;
+        segRawT = 1;
+      }
 
       const from = waypoints[seg], to = waypoints[seg+1];
-      const pos  = new google.maps.LatLng(from.lat + (to.lat-from.lat)*t, from.lng + (to.lng-from.lng)*t);
+      const pos = new google.maps.LatLng(
+        from.lat + (to.lat - from.lat) * segRawT, 
+        from.lng + (to.lng - from.lng) * segRawT
+      );
       _transportMarker.setPosition(pos);
       if (_pulseOverlay) _pulseOverlay.moveTo(pos);
 
-      const segProgress = coveredKm + segDistances[seg] * rawT;
-      const remainingKm = Math.max(0, refKm - segProgress);
-
-      if (distEl) distEl.textContent = Math.round(remainingKm).toLocaleString() + ' km';
+      // Show 1 decimal point for "fast dropping" live ticker effect
+      if (distEl) distEl.textContent = remainingKm.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' km';
       if (etaEl) {
         const remainingHours = remainingKm / realSpeedKmH;
         etaEl.textContent = fmtETA(remainingHours);
-        if (etaSub) etaSub.textContent = remainingHours <= 0 ? '\uD83C\uDF89 Destination reached!' : 'Time remaining';
+        if (etaSub) etaSub.textContent = remainingHours <= 0 ? '🎉 Destination reached!' : 'Time remaining';
       }
 
-      if (rawT < 1) {
-        _animId = requestAnimationFrame(tick);
-      } else if (!isLast) {
-        coveredKm += segDistances[seg];
-        _transportMarker.setPosition(new google.maps.LatLng(to.lat, to.lng));
-        seg++; tStart = null;
-        _animId = requestAnimationFrame(tick);
-      }
+      _animId = requestAnimationFrame(tick);
     }
     _animId = requestAnimationFrame(tick);
   }
