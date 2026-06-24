@@ -1149,7 +1149,9 @@
     const routeKm = totalDistKm || segDistances.reduce((a,b) => a+b, 0) || 1;
     const totalTripMs = routeKm / speedKmPerMs;
 
-    const shippedTime = (shipment && shipment.shipped_date) ? new Date(shipment.shipped_date).getTime() : Date.now();
+    // Use updated_at (exact UTC timestamp) instead of shipped_date (which can be in the future due to timezone parsing)
+    // This ensures the plane starts moving exactly when marked "In Transit"
+    const shippedTime = (shipment && shipment.updated_at) ? new Date(shipment.updated_at).getTime() : Date.now();
     
     const distEl = document.getElementById('d-distance');
     const etaEl  = document.getElementById('d-eta');
