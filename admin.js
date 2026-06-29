@@ -1513,10 +1513,14 @@ document.getElementById('create-shipment-form')?.addEventListener('submit', asyn
   const { data, error } = await db.from('shipments').insert([payload]).select('id').single();
 
   if (!error && data?.id) {
+    // Use admin-set pickup/departure time for the initial milestone; fall back to now
+    const pickupInput = document.getElementById('cs-pickup-time')?.value;
+    const pickupTimestamp = pickupInput ? new Date(pickupInput).toISOString() : new Date().toISOString();
     await db.from('milestones').insert([{
       shipment_id: data.id,
       message: 'Shipment Data Received. Preparing for dispatch.',
-      location_name: payload.origin || 'Processing Hub'
+      location_name: payload.origin || 'Processing Hub',
+      timestamp: pickupTimestamp
     }]);
   }
   btn.disabled = false;
@@ -1542,6 +1546,14 @@ function autoGenId() {
 }
 // Alias used by admin.html button
 const generateTrackingId = autoGenId;
+
+// Helper: fill the pickup time field with the current local datetime
+function setCreatePickupNow() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const localISO = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('cs-pickup-time').value = localISO;
+}
 
 // -------------------------------------
 // DELETE
@@ -1656,6 +1668,9 @@ function openEditModal(id) {
   document.getElementById('edit-error').classList.add('hidden');
   document.getElementById('edit-success').classList.add('hidden');
   document.getElementById('edit-modal').classList.remove('hidden');
+
+  // Load milestones for this shipment so admin can edit event times
+  loadEditMilestones(s.id);
 }
 
 function closeEditModal() {
@@ -1716,6 +1731,111 @@ async function saveEditShipment() {
     log(`✏️ Shipment ${payload.tracking_number} edited`);
     loadShipments();
     setTimeout(() => closeEditModal(), 1500);
+  }
+}
+
+// ─── Load milestones for the edit modal ───────────────────────────────────
+let _editModalShipmentId = null;
+
+async function loadEditMilestones(shipmentId) {
+  // Accept either an explicit ID or fall back to the hidden edit-id field
+  const id = shipmentId || document.getElementById('edit-id')?.value;
+  if (!id) return;
+  _editModalShipmentId = id;
+
+  const listEl = document.getElementById('edit-milestones-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="text-white/30 text-xs text-center py-6">Loading…</div>';
+
+  const { data: milestones, error } = await db
+    .from('milestones')
+    .select('*')
+    .eq('shipment_id', id)
+    .order('timestamp', { ascending: true });
+
+  if (error || !milestones || milestones.length === 0) {
+    listEl.innerHTML = '<div class="text-white/30 text-xs text-center py-6">No tracking events yet for this shipment.</div>';
+    return;
+  }
+
+  const pad = n => String(n).padStart(2, '0');
+  function toLocalInput(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  listEl.innerHTML = milestones.map((m, i) => {
+    const safeMsg = esc(m.message || '');
+    const safeLoc = esc(m.location_name || '');
+    const localVal = toLocalInput(m.timestamp);
+    const isFirst = i === 0;
+    return `
+    <div id="ms-row-${m.id}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            ${isFirst ? '<span style="background:rgba(91,33,182,0.2);color:#a78bfa;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;">Pickup / Departure</span>' : ''}
+          </div>
+          <p style="color:rgba(255,255,255,0.85);font-size:13px;font-weight:500;margin-bottom:2px;">${safeMsg}</p>
+          ${safeLoc ? `<p style="color:rgba(255,255,255,0.4);font-size:11px;">${safeLoc}</p>` : ''}
+        </div>
+        <button onclick="deleteMilestone('${m.id}')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;flex-shrink:0;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(239,68,68,0.2)';this.style.color='#ef4444'"
+          onmouseout="this.style.background='rgba(239,68,68,0.1)';this.style.color='rgba(239,68,68,0.7)'">
+          🗑 Delete
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <label style="display:block;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;">⏱ Event Time (shown on tracking page)</label>
+          <input id="ms-ts-${m.id}" type="datetime-local" value="${localVal}"
+            style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:white;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;"
+            onfocus="this.style.borderColor='#a78bfa'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'" />
+        </div>
+        <button onclick="updateMilestoneTime('${m.id}')" style="background:rgba(91,33,182,0.2);border:1px solid rgba(91,33,182,0.35);color:#a78bfa;font-size:11px;font-weight:700;padding:8px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:all 0.2s;margin-top:18px;"
+          onmouseover="this.style.background='rgba(91,33,182,0.35)'"
+          onmouseout="this.style.background='rgba(91,33,182,0.2)'">
+          ✓ Save Time
+        </button>
+        <span id="ms-feedback-${m.id}" style="font-size:11px;color:#4ade80;display:none;margin-top:18px;">Saved!</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Save updated timestamp for a single milestone ────────────────────────
+async function updateMilestoneTime(milestoneId) {
+  const input = document.getElementById(`ms-ts-${milestoneId}`);
+  const feedback = document.getElementById(`ms-feedback-${milestoneId}`);
+  if (!input || !input.value) { toast('⚠️ Please select a date and time first.', true); return; }
+
+  const newTimestamp = new Date(input.value).toISOString();
+  const { error } = await db.from('milestones').update({ timestamp: newTimestamp }).eq('id', milestoneId);
+
+  if (error) {
+    toast('❌ Failed to update time: ' + error.message, true);
+  } else {
+    if (feedback) { feedback.style.display = 'inline'; setTimeout(() => { feedback.style.display = 'none'; }, 3000); }
+    toast('✅ Event time updated — customer tracking page reflects new time!');
+  }
+}
+
+// ─── Delete a milestone ───────────────────────────────────────────────────
+async function deleteMilestone(milestoneId) {
+  if (!confirm('Delete this tracking event? This cannot be undone.')) return;
+  const { error } = await db.from('milestones').delete().eq('id', milestoneId);
+  if (error) {
+    toast('❌ Delete failed: ' + error.message, true);
+  } else {
+    const row = document.getElementById(`ms-row-${milestoneId}`);
+    if (row) row.remove();
+    toast('🗑 Tracking event deleted.');
+    // If list is now empty, show placeholder
+    const listEl = document.getElementById('edit-milestones-list');
+    if (listEl && !listEl.querySelector('[id^="ms-row-"]')) {
+      listEl.innerHTML = '<div class="text-white/30 text-xs text-center py-6">No tracking events remaining for this shipment.</div>';
+    }
   }
 }
 

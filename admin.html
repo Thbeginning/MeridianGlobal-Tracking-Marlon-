@@ -481,6 +481,24 @@
                 </div>
               </div>
 
+              <!-- ─── Pickup / Departure Time ─── -->
+              <div class="border-t border-white/10 pt-5">
+                <div class="p-4 rounded-xl border" style="background:rgba(91,33,182,0.08);border-color:rgba(91,33,182,0.25);">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-purple-300 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Pickup / Departure Time
+                      </p>
+                      <p class="text-white/40 text-xs mt-1">The exact time shown in Tracking History as the first event (e.g. plane takeoff, package pickup)</p>
+                    </div>
+                    <button type="button" onclick="setCreatePickupNow()" class="text-purple-300 hover:text-purple-200 text-xs font-semibold bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap">⏱ Now</button>
+                  </div>
+                  <input id="cs-pickup-time" type="datetime-local" class="admin-input w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-400 transition-all" />
+                  <p class="text-white/30 text-xs mt-2">📌 Leave blank to use current time. Hours &amp; minutes are fully editable.</p>
+                </div>
+              </div>
+
               <div id="create-error" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm"></div>
               <div id="create-success" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl px-4 py-3 text-sm"></div>
 
@@ -917,6 +935,23 @@
 
         <div id="edit-error" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm"></div>
         <div id="edit-success" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl px-4 py-3 text-sm"></div>
+
+        <!-- ─── TRACKING EVENTS EDITOR ─── -->
+        <div class="border-t border-white/10 pt-5 mt-2">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <p class="text-purple-300 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Edit Tracking Events
+              </p>
+              <p class="text-white/40 text-xs mt-0.5">Change the pickup / departure time shown on the customer tracking page</p>
+            </div>
+            <button type="button" onclick="loadEditMilestones()" class="text-white/50 hover:text-white text-xs bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition-all">↻ Refresh</button>
+          </div>
+          <div id="edit-milestones-list" style="max-height:320px;overflow-y:auto;">
+            <div class="text-white/30 text-xs text-center py-6">Loading tracking events…</div>
+          </div>
+        </div>
 
         <div class="flex gap-3 pt-2">
           <button id="edit-save-btn" onclick="saveEditShipment()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all">Save Changes</button>
