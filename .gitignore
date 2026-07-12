@@ -1,0 +1,26 @@
+# Large media files (too big for GitHub without LFS)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.jfif
+*.webm
+
+# Temp build/fix scripts (not needed in repo)
+apply_all.js
+build_globe.js
+fix.js
+fix_globe.js
+fix_mobile.js
+fix_section.js
+replace_globe.js
+restore_globe_section.js
+update_slides.js
+upgrade_globe.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
