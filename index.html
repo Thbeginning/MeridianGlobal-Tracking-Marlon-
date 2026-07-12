@@ -3143,78 +3143,91 @@
         </div>
       </div>
 
-      <!-- Impact View -->
+      <!-- Tab 1: Global Impact -->
       <div id="track-impact" class="cap-content active">
-        <!-- Reusing the impact grid styles, adding background for dark theme -->
         <style>
           #track-impact {
             background: var(--navy);
-            color: #ffffff;
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            background-image: radial-gradient(circle at top right, rgba(242,100,25,0.15) 0%, transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(242,100,25,0.1) 0%, transparent 30%);
-            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            background-image: radial-gradient(circle at top right,rgba(242,100,25,.15) 0%,transparent 40%),
+                              radial-gradient(circle at bottom left,rgba(242,100,25,.1) 0%,transparent 30%);
+            border: 1px solid rgba(255,255,255,0.06);
           }
-          #track-impact .impact-icon { color: var(--orange); }
-          #track-impact .impact-num { color: var(--orange); font-family: var(--font-head); font-weight: 900; font-size: 3rem; }
-          #track-impact .impact-label { color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem; font-weight: 700; }
+          #track-impact .impact-icon { color: var(--orange) !important; }
+          #track-impact .impact-num  { color: var(--orange) !important; }
+          #track-impact .impact-label{ color: #cbd5e1 !important; }
         </style>
         <div class="impact-grid">
-        <div class="impact-item reveal">
-          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <div class="impact-num" data-target="101273">0</div>
-          <div class="impact-label">Packages Delivered</div>
+          <div class="impact-item reveal">
+            <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <div class="impact-num" data-target="101273">0</div>
+            <div class="impact-label">Packages Delivered</div>
+          </div>
+          <div class="impact-item reveal">
+            <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            <div class="impact-num" data-target="673754">0</div>
+            <div class="impact-label">KM Covered Per Year</div>
+          </div>
+          <div class="impact-item reveal">
+            <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div class="impact-num" data-target="16714">0</div>
+            <div class="impact-label">Happy Clients</div>
+          </div>
+          <div class="impact-item reveal">
+            <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="impact-num" data-target="160">0</div>
+            <div class="impact-label">Countries Served</div>
+          </div>
         </div>
       </div>
 
-      <!-- Performance View -->
+      <!-- Tab 2: Performance Metrics -->
       <div id="track-perf" class="cap-content">
         <div class="perf-grid">
-        <div class="perf-stat reveal">
-          <div class="perf-stat-num">99.8<span>%</span></div>
-          <div class="perf-stat-label">On-Time Delivery Rate</div>
-        </div>
-        <div class="perf-stat reveal">
-          <div class="perf-stat-num" style="font-size:1.6rem;">Real-Time<span style="color:var(--orange);">GPS</span></div>
-          <div class="perf-stat-label">Live Shipment Tracking</div>
-        </div>
-        <div class="perf-stat reveal">
-          <div class="perf-stat-num">4.9<span>/5</span></div>
-          <div class="perf-stat-label">Average Client Rating</div>
-        </div>
-      </div>
-
-      <div class="badge-grid">
-        <div class="badge-card reveal">
-          <div class="badge-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div class="perf-stat reveal">
+            <div class="perf-stat-num">99.8<span>%</span></div>
+            <div class="perf-stat-label">On-Time Delivery Rate</div>
           </div>
-          <div>
-            <div class="badge-title">7+ Years Experience</div>
-            <div class="badge-sub">Proven logistics excellence since 2019</div>
+          <div class="perf-stat reveal">
+            <div class="perf-stat-num" style="font-size:1.6rem;">Real-Time<span style="color:var(--orange);">GPS</span></div>
+            <div class="perf-stat-label">Live Shipment Tracking</div>
+          </div>
+          <div class="perf-stat reveal">
+            <div class="perf-stat-num">4.9<span>/5</span></div>
+            <div class="perf-stat-label">Average Client Rating</div>
           </div>
         </div>
-        <div class="badge-card reveal">
-          <div class="badge-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <div class="badge-grid">
+          <div class="badge-card reveal">
+            <div class="badge-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <div class="badge-title">7+ Years Experience</div>
+              <div class="badge-sub">Proven logistics excellence since 2019</div>
+            </div>
           </div>
-          <div>
-            <div class="badge-title">ISO 27001 Certified</div>
-            <div class="badge-sub">International security standard compliant</div>
+          <div class="badge-card reveal">
+            <div class="badge-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div>
+              <div class="badge-title">ISO 27001 Certified</div>
+              <div class="badge-sub">International security standard compliant</div>
+            </div>
+          </div>
+          <div class="badge-card reveal">
+            <div class="badge-icon">
+              <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            </div>
+            <div>
+              <div class="badge-title">8+ Industry Awards</div>
+              <div class="badge-sub">Recognized globally for logistics excellence</div>
+            </div>
           </div>
         </div>
-        <div class="badge-card reveal">
-          <div class="badge-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-          </div>
-          <div>
-            <div class="badge-title">8+ Industry Awards</div>
-            <div class="badge-sub">Recognized globally for logistics excellence</div>
-          </div>
-        </div>
-      </div>
       </div>
 
       <script>
