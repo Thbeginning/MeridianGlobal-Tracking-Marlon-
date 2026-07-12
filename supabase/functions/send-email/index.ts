@@ -3,18 +3,26 @@ const FROM_EMAIL     = "Nexshipment <contact@nexshipment.com>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 Deno.serve(async (req) => {
-  // 1. Handle CORS preflight requests
+  // Always handle OPTIONS first — before ANY auth check
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
-    const { to, subject, html } = await req.json();
+    const body = await req.json();
+    const { to, subject, html } = body;
+
+    if (!to || !subject || !html) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: to, subject, html" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -31,17 +39,23 @@ Deno.serve(async (req) => {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data?.message || "Resend API error");
 
-    return new Response(JSON.stringify({ success: true, id: data.id }), { 
-      status: 200, 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
-    });
+    if (!res.ok) {
+      return new Response(
+        JSON.stringify({ error: data?.message || "Resend API error", details: data }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, id: data.id }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { 
-      status: 500, 
-      headers: { ...corsHeaders, "Content-Type": "application/json" } 
-    });
+    return new Response(
+      JSON.stringify({ error: String(err) }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
