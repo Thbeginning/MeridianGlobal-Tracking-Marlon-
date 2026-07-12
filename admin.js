@@ -1341,20 +1341,11 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
       };
       const subject = subjectMap[status] || `Shipment Update: ${status} — ${tracking_number}`;
 
-      // Send via Resend API through CORS proxy (avoids browser CORS block)
-      const res = await fetch('https://corsproxy.io/?url=https://api.resend.com/emails', {
+      // Call Supabase Edge Function (deployed with --no-verify-jwt, no CORS issues)
+      const res = await fetch('https://rmbfhrmiuaezjopqtccx.supabase.co/functions/v1/send-email', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer re_E1MPKxUR_9Jquyp7G2ECXjwg6NLLpjK5p',
-          'Content-Type': 'application/json',
-          'x-requested-with': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          from: 'Nexshipment <contact@nexshipment.com>',
-          to: [client_email],
-          subject: subject,
-          html: htmlBody
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: client_email, subject, html: htmlBody })
       });
 
       const resData = await res.json().catch(() => ({}));
