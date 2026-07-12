@@ -3123,40 +3123,11 @@
   </section>
 
 
+  
   <!-- ════════════════════════════════════════
-       IMPACT COUNTERS
+       OUR TRACK RECORD (IMPACT & PERFORMANCE)
   ════════════════════════════════════════ -->
-  <section id="impact">
-    <div class="container">
-      <div class="impact-grid">
-        <div class="impact-item reveal">
-          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <div class="impact-num" data-target="101273">0</div>
-          <div class="impact-label">Packages Delivered</div>
-        </div>
-        <div class="impact-item reveal">
-          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-          <div class="impact-num" data-target="673754">0</div>
-          <div class="impact-label">KM Covered Per Year</div>
-        </div>
-        <div class="impact-item reveal">
-          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <div class="impact-num" data-target="16714">0</div>
-          <div class="impact-label">Happy Clients</div>
-        </div>
-        <div class="impact-item reveal">
-          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <div class="impact-num" data-target="160">0</div>
-          <div class="impact-label">Countries Served</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════
-       PERFORMANCE STATS & BADGES
-  ════════════════════════════════════════ -->
-  <section id="performance" class="section">
+  <section id="track-record" class="section">
     <div class="container">
       <div class="section-header reveal">
         <div class="section-eyebrow">Our Performance</div>
@@ -3164,7 +3135,43 @@
         <p class="section-desc">Industry-leading metrics backed by real data, real clients, and real results across every logistics corridor we serve.</p>
       </div>
 
-      <div class="perf-grid">
+      <!-- Pill Toggle -->
+      <div class="cap-toggle-wrapper reveal" style="margin-bottom: 50px;">
+        <div class="cap-toggle">
+          <div class="cap-toggle-btn active" onclick="switchTrack('impact')">Global Impact</div>
+          <div class="cap-toggle-btn" onclick="switchTrack('perf')">Performance Metrics</div>
+        </div>
+      </div>
+
+      <!-- Impact View -->
+      <div id="track-impact" class="cap-content active">
+        <!-- Reusing the impact grid styles, adding background for dark theme -->
+        <style>
+          #track-impact {
+            background: var(--navy);
+            color: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            background-image: radial-gradient(circle at top right, rgba(242,100,25,0.15) 0%, transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(242,100,25,0.1) 0%, transparent 30%);
+            border: 1px solid rgba(255,255,255,0.05);
+          }
+          #track-impact .impact-icon { color: var(--orange); }
+          #track-impact .impact-num { color: var(--orange); font-family: var(--font-head); font-weight: 900; font-size: 3rem; }
+          #track-impact .impact-label { color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem; font-weight: 700; }
+        </style>
+        <div class="impact-grid">
+        <div class="impact-item reveal">
+          <svg class="impact-icon" width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <div class="impact-num" data-target="101273">0</div>
+          <div class="impact-label">Packages Delivered</div>
+        </div>
+      </div>
+
+      <!-- Performance View -->
+      <div id="track-perf" class="cap-content">
+        <div class="perf-grid">
         <div class="perf-stat reveal">
           <div class="perf-stat-num">99.8<span>%</span></div>
           <div class="perf-stat-label">On-Time Delivery Rate</div>
@@ -3208,8 +3215,24 @@
           </div>
         </div>
       </div>
+      </div>
+
+      <script>
+        function switchTrack(tab) {
+          // Update buttons (we use the same class 'cap-toggle-btn' but scope it to this wrapper)
+          const wrapper = document.getElementById('track-record');
+          const btns = wrapper.querySelectorAll('.cap-toggle-btn');
+          btns[0].classList.toggle('active', tab === 'impact');
+          btns[1].classList.toggle('active', tab === 'perf');
+          
+          // Update content
+          document.getElementById('track-impact').classList.toggle('active', tab === 'impact');
+          document.getElementById('track-perf').classList.toggle('active', tab === 'perf');
+        }
+      </script>
     </div>
   </section>
+
 
   <!-- ════════════════════════════════════════
        TESTIMONIALS
