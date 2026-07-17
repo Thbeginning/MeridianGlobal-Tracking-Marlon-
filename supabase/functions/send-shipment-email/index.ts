@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "re_N5op6iVA_5uKVo2oXyaWSjM89zQpifYo5";
-const FROM_EMAIL    = Deno.env.get("FROM_EMAIL")     ?? "contact@primelogisticstrace.com";
-const FROM_NAME     = Deno.env.get("FROM_NAME")      ?? "PrimeLogistics Trace";
-const WEB_URL       = Deno.env.get("WEB_URL")        ?? "https://primelogisticstrace.com";
+const RESEND_API_KEY = "re_izdhzxM6_KDUkvZpAdUCado5tSP9pPPwz";
+const FROM_EMAIL    = "contact@meridiangrps.com";
+const FROM_NAME     = "Meridian Global Transit";
+const WEB_URL       = "https://meridiangrps.com";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 function getStatusConfig(status: string): {
@@ -134,7 +134,7 @@ function buildEmailHtml(p: {
                                 font-size:22px;text-align:center;margin-bottom:12px;">📦</div>
                     <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;
                                letter-spacing:-0.3px;line-height:1.2;">
-                      PrimeLogistics Trace
+                      MERIDIAN <span style="color:#FF8C00;">GLOBAL</span> TRANSIT
                     </h1>
                     <p style="margin:6px 0 0;color:rgba(255,255,255,0.5);font-size:12px;
                                font-weight:600;text-transform:uppercase;letter-spacing:0.12em;">
@@ -293,14 +293,14 @@ function buildEmailHtml(p: {
                   <td style="color:rgba(255,255,255,0.45);font-size:13px;line-height:1.6;">
                     <strong style="color:rgba(255,255,255,0.7);">Need help?</strong>
                     &nbsp;Our support team is available 24/7.<br>
-                    📧 <a href="mailto:contact@primelogisticstrace.com"
+                    📧 <a href="mailto:contact@meridiangrps.com"
                           style="color:#FF8C00;text-decoration:none;font-weight:600;">
-                      contact@primelogisticstrace.com
+                      contact@meridiangrps.com
                     </a>
                     &nbsp;&nbsp;|&nbsp;&nbsp;
                     🌐 <a href="${WEB_URL}"
                           style="color:#FF8C00;text-decoration:none;font-weight:600;">
-                      primelogisticstrace.com
+                      meridiangrps.com
                     </a>
                   </td>
                 </tr>
@@ -313,7 +313,7 @@ function buildEmailHtml(p: {
             <td style="background:#0a0f1e;padding:28px 40px;text-align:center;
                        border-top:1px solid rgba(255,255,255,0.05);">
               <p style="margin:0 0 8px;color:rgba(255,255,255,0.3);font-size:12px;line-height:1.6;">
-                © 2025 PrimeLogistics Trace. All rights reserved.<br>
+                © 2025 Meridian Global Transit. All rights reserved.<br>
                 1400 Logistics Blvd, Houston, TX 77032, United States
               </p>
               <p style="margin:8px 0 0;color:rgba(255,255,255,0.18);font-size:11px;">
