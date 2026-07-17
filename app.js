@@ -1334,7 +1334,7 @@ window.downloadWaybill = function() {
     Coordinates: ${shipment.lat?.toFixed(4)}, ${shipment.lng?.toFixed(4)}
     
     This is an official waybill from Nexshipment.
-    Nexshipmenttrace.com | contact@Nexshipmenttrace.com
+    Meridian Global Transit | contact@meridiangrps.com
   `;
 
   const blob = new Blob([content], { type: 'text/plain' });

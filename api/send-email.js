@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: "Nexshipment <contact@Nexshipmenttrace.com>",
+        from: "Nexshipment <contact@meridiangrps.com>",
         to: client_email,
         subject: `Shipment Update: ${tracking_number} — ${status}`,
         html: htmlBody

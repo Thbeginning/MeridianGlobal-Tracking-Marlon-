@@ -1269,7 +1269,7 @@ function getEmailTemplate(p) {
         <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
           <td style="width:50%;padding-right:16px;">
             <p style="margin:0 0 4px;color:#374151;font-size:13px;font-weight:600;">📧 Email Support</p>
-            <a href="mailto:contact@nexshipment.com" style="color:#FF8C00;font-size:13px;text-decoration:none;">contact@nexshipment.com</a>
+            <a href="mailto:contact@meridiangrps.com" style="color:#FF8C00;font-size:13px;text-decoration:none;">contact@meridiangrps.com</a>
           </td>
           <td style="width:50%;padding-left:16px;border-left:1px solid #f1f5f9;">
             <p style="margin:0 0 4px;color:#374151;font-size:13px;font-weight:600;">🌐 Track Online</p>
