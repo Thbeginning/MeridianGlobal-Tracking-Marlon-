@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
 
   try {
     // Using the confirmed-working Resend API key directly
-    const RESEND_API_KEY = "re_hVr6x9Vy_6UyiP9bGg4gUKCzCMdQGZfaH";
+    const RESEND_API_KEY = "re_XVZcLAEg_GzbyHHFK2bSXVkkKucnAJzUu";
     const FROM_EMAIL = "Meridian Global Transit <contact@meridiangrps.com>";
 
     const body = await req.json();
