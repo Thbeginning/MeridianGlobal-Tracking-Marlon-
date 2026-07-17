@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Track Shipment — Nexshipment</title>
-  <meta name="description" content="Track your Nexshipment shipment in real-time. Live GPS updates, milestone history, and interactive map."/>
-  <link rel="icon" href="Logo.jpeg"/>
+  <title>Track Shipment — Meridian Global Transit</title>
+  <meta name="description" content="Track your Meridian Global Transit shipment in real-time. Live GPS updates, milestone history, and interactive map."/>
+  <link rel="icon" href="Logo.jpg"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -19,7 +19,7 @@
     /* ── Navbar ── */
     .track-navbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(5,10,48,0.97); backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.98); backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(255,255,255,0.06);
       padding: 0 1.5rem; height: 100px;
       display: flex; align-items: center; justify-content: space-between;
@@ -181,7 +181,7 @@
     /* Toast */
     .toast {
       position: fixed; top: 80px; right: 16px; z-index: 999;
-      background: rgba(5,10,48,0.95); backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.98); backdrop-filter: blur(20px);
       border: 1px solid rgba(255,140,0,0.3); color: #fff;
       font-size: 13px; font-weight: 500; padding: 12px 18px;
       border-radius: 14px; box-shadow: 0 16px 50px rgba(0,0,0,0.4);
@@ -217,7 +217,7 @@
   <nav class="track-navbar">
     <a href="index.html" class="nav-logo">
       <div class="nav-logo-icon">
-        <img src="Logo.jpeg" alt="Nexshipment Logo" style="height: 48px; width: auto; max-width: 100%; object-fit: contain; background: rgba(255, 255, 255, 0.95); padding: 5px 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+        <img src="Logo.jpg" alt="Meridian Global Transit Logo" style="height: 65px; width: auto; max-width: 100%; object-fit: contain; mix-blend-mode: screen;">
       </div>
     </a>
     <a href="index.html" class="nav-back-btn">
@@ -261,7 +261,7 @@
     <div id="state-idle" class="state-idle">
       <div class="state-icon">📦</div>
       <div class="state-title">Ready to Track</div>
-      <p class="state-sub">Enter your Nexshipment Logistics tracking number above to see live shipment status, GPS location, and milestone history.</p>
+      <p class="state-sub">Enter your Meridian Global Transit Logistics tracking number above to see live shipment status, GPS location, and milestone history.</p>
     </div>
 
     <!-- Loading State -->
@@ -525,8 +525,8 @@
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
   // ── Supabase ──
-  const SUPABASE_URL = 'https://rmbfhrmiuaezjopqtccx.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYmZocm1pdWFlempvcHF0Y2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTY5MDcsImV4cCI6MjA5OTM3MjkwN30.4jYoBn_MNKln73hKp9hzFuOgpIat_IFDLQV-LIux0eo';
+  const SUPABASE_URL = 'https://kuendlwvbcqcywkyixsn.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZW5kbHd2YmNxY3l3a3lpeHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODY4MDYsImV4cCI6MjA5OTc2MjgwNn0.gAcC5lt1j-FMP5ovy5kDjuCgiW532WdVfHpnr4L-EME';
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -808,7 +808,7 @@
   function doDownloadWaybill() {
     if (!currentShipment) return;
     const s = currentShipment;
-    const content = `Nexshipment — OFFICIAL WAYBILL\n${'='.repeat(46)}\nTracking Number: ${s.tracking_number}\nStatus:          ${s.status}\n\nSENDER:   ${s.sender_name || '—'}\nRECEIVER: ${s.receiver_name || '—'}\n\nORIGIN:      ${s.origin || '—'}\nDESTINATION: ${s.destination || '—'}\n\nWEIGHT:   ${s.weight ? s.weight + ' kg' : '—'}\nCONTENTS: ${s.description || '—'}\nEST. DELIVERY: ${s.estimated_delivery || '—'}\n\n${'='.repeat(46)}\nGenerated: ${new Date().toLocaleString()}\n\nThis is an official waybill from Nexshipment.\ncontact@nexshipment.com`;
+    const content = `Meridian Global Transit — OFFICIAL WAYBILL\n${'='.repeat(46)}\nTracking Number: ${s.tracking_number}\nStatus:          ${s.status}\n\nSENDER:   ${s.sender_name || '—'}\nRECEIVER: ${s.receiver_name || '—'}\n\nORIGIN:      ${s.origin || '—'}\nDESTINATION: ${s.destination || '—'}\n\nWEIGHT:   ${s.weight ? s.weight + ' kg' : '—'}\nCONTENTS: ${s.description || '—'}\nEST. DELIVERY: ${s.estimated_delivery || '—'}\n\n${'='.repeat(46)}\nGenerated: ${new Date().toLocaleString()}\n\nThis is an official waybill from Meridian Global Transit.\ncontact@meridianglobaltransit.com`;
     const blob = new Blob([content], { type: 'text/plain' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -824,7 +824,7 @@
     if (!currentShipment) return;
     const url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: 'Nexshipment', text: `Track shipment ${currentShipment.tracking_number}`, url });
+      navigator.share({ title: 'Meridian Global Transit', text: `Track shipment ${currentShipment.tracking_number}`, url });
     } else {
       navigator.clipboard.writeText(url).then(() => showToast('🔗 Tracking link copied to clipboard!'));
     }
@@ -1237,7 +1237,14 @@
     _animId = requestAnimationFrame(tick);
   }
   </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzf6w-rn68amA_RXuVcSlQ1xBtoB3-iuM&callback=initTrackMap"></script>
+  <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+    ({key: "AIzaSyBzf6w-rn68amA_RXuVcSlQ1xBtoB3-iuM", v: "weekly"});</script>
+  <script>
+    // Trigger the existing map initializer once the Maps API core is ready
+    google.maps.importLibrary("maps").then(function() {
+      if (typeof initTrackMap === 'function') initTrackMap();
+    });
+  </script>
 <!--Start of Tawk.to Script-->
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();

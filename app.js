@@ -16,8 +16,8 @@
 // ─────────────────────────────────────────
 // 1. SUPABASE CLIENT
 // ─────────────────────────────────────────
-const SUPABASE_URL = 'https://rmbfhrmiuaezjopqtccx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYmZocm1pdWFlempvcHF0Y2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTY5MDcsImV4cCI6MjA5OTM3MjkwN30.4jYoBn_MNKln73hKp9hzFuOgpIat_IFDLQV-LIux0eo';
+const SUPABASE_URL = 'https://kuendlwvbcqcywkyixsn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZW5kbHd2YmNxY3l3a3lpeHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODY4MDYsImV4cCI6MjA5OTc2MjgwNn0.gAcC5lt1j-FMP5ovy5kDjuCgiW532WdVfHpnr4L-EME';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

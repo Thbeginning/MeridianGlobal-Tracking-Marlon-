@@ -4,12 +4,12 @@
 'use strict';
 
 // --- Supabase ---
-const SUPABASE_URL = 'https://rmbfhrmiuaezjopqtccx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYmZocm1pdWFlempvcHF0Y2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3OTY5MDcsImV4cCI6MjA5OTM3MjkwN30.4jYoBn_MNKln73hKp9hzFuOgpIat_IFDLQV-LIux0eo';
+const SUPABASE_URL = 'https://kuendlwvbcqcywkyixsn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZW5kbHd2YmNxY3l3a3lpeHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxODY4MDYsImV4cCI6MjA5OTc2MjgwNn0.gAcC5lt1j-FMP5ovy5kDjuCgiW532WdVfHpnr4L-EME';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/send-shipment-email`;
 
-const ADMIN_CREDS = { username: 'admin', password: 'Nexshipment2026!' };
+const ADMIN_CREDS = { username: 'admin', password: 'MeridianGlobal2026!' };
 
 let allShipments = [];
 let adminMap = null;
@@ -1342,7 +1342,7 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
       const subject = subjectMap[status] || `Shipment Update: ${status} — ${tracking_number}`;
 
       // Call Supabase Edge Function (deployed with --no-verify-jwt, no CORS issues)
-      const res = await fetch('https://rmbfhrmiuaezjopqtccx.supabase.co/functions/v1/send-email', {
+      const res = await fetch('https://kuendlwvbcqcywkyixsn.supabase.co/functions/v1/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to: client_email, subject, html: htmlBody })
@@ -1609,7 +1609,7 @@ document.getElementById('create-shipment-form')?.addEventListener('submit', asyn
 function autoGenId() {
   const y = new Date().getFullYear();
   const r = String(Math.floor(Math.random()*900)+100);
-  document.getElementById('cs-tracking').value = `PLT-${y}-${r}`;
+  document.getElementById('cs-tracking').value = `MGT-${y}-${r}`;
 }
 // Alias used by admin.html button
 const generateTrackingId = autoGenId;
@@ -2077,4 +2077,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-console.log('%c🚀 PLT Command Centre', 'color:#FF8C00;font-size:16px;font-weight:bold;');
+console.log('%c🚢 MGT Command Centre', 'color:#FF8C00;font-size:16px;font-weight:bold;');

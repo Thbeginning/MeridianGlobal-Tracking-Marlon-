@@ -1,5 +1,5 @@
 const RESEND_API_KEY = "re_E1MPKxUR_9Jquyp7G2ECXjwg6NLLpjK5p";
-const FROM_EMAIL     = "Nexshipment <contact@nexshipment.com>";
+const FROM_EMAIL     = "Meridian Global Transit <contact@meridianglobaltransit.com>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
