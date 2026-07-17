@@ -14,17 +14,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Read API key from environment secret (set via Supabase Dashboard > Project Settings > Edge Functions > Secrets)
-    // Fallback to hardcoded key if secret not set
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "re_hVr6x9Vy_6UyiP9bGg4gUKCzCMdQGZfaH";
+    // Using the confirmed-working Resend API key directly
+    const RESEND_API_KEY = "re_hVr6x9Vy_6UyiP9bGg4gUKCzCMdQGZfaH";
     const FROM_EMAIL = "Meridian Global Transit <contact@meridiangrps.com>";
-
-    if (!RESEND_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "RESEND_API_KEY secret not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const body = await req.json();
     const { to, subject, html } = body;
