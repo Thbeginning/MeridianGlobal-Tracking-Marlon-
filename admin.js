@@ -1134,15 +1134,35 @@ function getEmailTemplate(p) {
     'Customs Hold':      { color:'#dc2626', gradStart:'#dc2626', gradEnd:'#991b1b', icon:'🔒', badge:'CUSTOMS HOLD',      headline:'Your Shipment Requires Attention',   body:'Your shipment has been temporarily held at customs for inspection. This is a standard procedure for international shipments. Our team is actively working to resolve this as quickly as possible.' },
     'Customs Cleared':   { color:'#059669', gradStart:'#059669', gradEnd:'#047857', icon:'✅', badge:'CUSTOMS CLEARED',   headline:'Customs Clearance Successful',      body:'Excellent news! Your shipment has successfully passed all customs inspections and is now continuing its journey to the final destination.' },
     'Out for Delivery':  { color:'#d97706', gradStart:'#d97706', gradEnd:'#b45309', icon:'🚚', badge:'OUT FOR DELIVERY',  headline:'Your Package Arrives Today',        body:'Your shipment is now on the delivery vehicle and is scheduled to arrive at your address today. Please ensure someone is available to receive the package.' },
-    'Delivered':         { color:'#16a34a', gradStart:'#16a34a', gradEnd:'#15803d', icon:'🎉', badge:'DELIVERED',         headline:'Your Shipment Has Been Delivered',  body:'Your shipment has been successfully delivered to the destination address. Thank you for trusting Nexshipment with your logistics needs. We hope to serve you again.' },
+    'Delivered':         { color:'#16a34a', gradStart:'#16a34a', gradEnd:'#15803d', icon:'🎉', badge:'DELIVERED',         headline:'Your Shipment Has Been Delivered',  body:'Your shipment has been successfully delivered to the destination address. Thank you for choosing Meridian Global Transit for your logistics needs. We look forward to serving you again.' },
     'On Hold':           { color:'#b45309', gradStart:'#b45309', gradEnd:'#92400e', icon:'⏸️', badge:'ON HOLD',           headline:'Your Shipment Is Currently On Hold', body:'Your shipment has been temporarily placed on hold. Our support team has been notified and will work to resolve the issue promptly. Please do not hesitate to contact us for more details.' },
   };
   const cfg = statusCfg[p.status] || { color:'#4f46e5', gradStart:'#4f46e5', gradEnd:'#7c3aed', icon:'📦', badge:'STATUS UPDATE', headline:'Your Shipment Status Has Been Updated', body:'Your shipment status has been updated. Please check your tracking page for the latest information.' };
 
   const dateStr = new Date(p.updated_at).toLocaleString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', timeZoneName:'short' });
-  const trackUrl = `https://nexshipment.com/track.html?track=${encodeURIComponent(p.tracking_number)}`;
+  const trackUrl = `https://meridiangrps.com/track.html?track=${encodeURIComponent(p.tracking_number)}`;
   const hasReason = p.status_reason && p.status_reason.trim() !== '';
   const year = new Date().getFullYear();
+
+  // Generate barcode SVG from tracking number (Code 128-style bars)
+  function genBarcode(text) {
+    const chars = (text + '').split('');
+    const seed = chars.reduce((a,c,i) => a + c.charCodeAt(0) * (i+7), 0);
+    let bars = '';
+    const barCount = 60;
+    const totalW = 320;
+    const barH = 60;
+    let x = 0;
+    for (let i = 0; i < barCount; i++) {
+      const w = ((seed * (i+3) * 31337) % 3) + 1;
+      const isBar = (seed + i) % 2 === 0;
+      if (isBar) bars += `<rect x="${x}" y="0" width="${w}" height="${barH}" fill="#111827"/>`;
+      x += w;
+    }
+    const scaleX = totalW / x;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${barH}" viewBox="0 0 ${x} ${barH}" preserveAspectRatio="none">${bars}</svg>`;
+  }
+  const barcodeHtml = genBarcode(p.tracking_number);
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -1155,7 +1175,7 @@ function getEmailTemplate(p) {
 <body style="margin:0;padding:0;background-color:#eef2f7;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
 <!-- Preheader (hidden) -->
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${cfg.headline} — Tracking #${p.tracking_number} · Nexshipment</div>
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${cfg.headline} — Tracking #${p.tracking_number} · Meridian Global Transit</div>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef2f7;min-height:100vh;">
 <tr><td align="center" style="padding:40px 16px;">
@@ -1165,13 +1185,14 @@ function getEmailTemplate(p) {
 
     <!-- ── LOGO BAR ── -->
     <tr>
-      <td style="background:#0b1120;border-radius:16px 16px 0 0;padding:24px 40px;text-align:center;">
+      <td style="background:#050A30;border-radius:16px 16px 0 0;padding:24px 40px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td style="text-align:left;">
-            <span style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">NEX<span style="color:#FF8C00;">SHIPMENT</span></span>
+          <td style="text-align:left;vertical-align:middle;">
+            <span style="color:#ffffff;font-size:20px;font-weight:900;letter-spacing:-0.5px;">MERIDIAN <span style="color:#FF8C00;">GLOBAL</span> TRANSIT</span><br>
+            <span style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;">Global Logistics Excellence</span>
           </td>
-          <td style="text-align:right;">
-            <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55);font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;letter-spacing:0.5px;">SHIPMENT NOTIFICATION</span>
+          <td style="text-align:right;vertical-align:middle;">
+            <span style="background:rgba(255,140,0,0.12);color:#FF8C00;font-size:10px;font-weight:700;padding:6px 14px;border-radius:20px;letter-spacing:0.8px;border:1px solid rgba(255,140,0,0.25);">SHIPMENT NOTIFICATION</span>
           </td>
         </tr></table>
       </td>
@@ -1179,53 +1200,53 @@ function getEmailTemplate(p) {
 
     <!-- ── GRADIENT HERO BANNER ── -->
     <tr>
-      <td style="background:linear-gradient(135deg,${cfg.gradStart} 0%,${cfg.gradEnd} 100%);padding:44px 40px;text-align:center;">
-        <div style="font-size:52px;line-height:1;margin-bottom:16px;">${cfg.icon}</div>
-        <div style="display:inline-block;background:rgba(255,255,255,0.18);color:#ffffff;font-size:10px;font-weight:800;letter-spacing:2px;padding:5px 16px;border-radius:20px;margin-bottom:16px;">${cfg.badge}</div>
-        <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;line-height:1.3;letter-spacing:-0.3px;">${cfg.headline}</h1>
-        <p style="margin:14px 0 0;color:rgba(255,255,255,0.85);font-size:15px;line-height:1.6;">${cfg.body}</p>
+      <td style="background:linear-gradient(135deg,${cfg.gradStart} 0%,${cfg.gradEnd} 100%);padding:48px 40px;text-align:center;">
+        <div style="font-size:56px;line-height:1;margin-bottom:18px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));">${cfg.icon}</div>
+        <div style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:10px;font-weight:800;letter-spacing:2.5px;padding:6px 18px;border-radius:20px;margin-bottom:18px;border:1px solid rgba(255,255,255,0.3);">${cfg.badge}</div>
+        <h1 style="margin:0 0 14px;color:#ffffff;font-size:28px;font-weight:800;line-height:1.3;letter-spacing:-0.5px;text-shadow:0 2px 8px rgba(0,0,0,0.15);">${cfg.headline}</h1>
+        <p style="margin:0;color:rgba(255,255,255,0.9);font-size:15px;line-height:1.7;max-width:460px;margin:0 auto;">${cfg.body}</p>
       </td>
     </tr>
 
     <!-- ── TRACKING CARD ── -->
     <tr>
       <td style="background:#ffffff;padding:0 40px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:12px;margin:32px 0;overflow:hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:14px;margin:32px 0 16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
 
           <!-- Card header -->
           <tr>
-            <td colspan="2" style="background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:14px 20px;">
-              <span style="color:#6b7280;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">Shipment Details</span>
+            <td colspan="2" style="background:linear-gradient(90deg,#050A30,#071240);padding:14px 22px;">
+              <span style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">📦 Shipment Details</span>
             </td>
           </tr>
 
           <!-- Tracking ID -->
           <tr>
-            <td style="padding:16px 20px;border-bottom:1px solid #f1f5f9;width:38%;">
-              <span style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Tracking Number</span>
+            <td style="padding:16px 22px;border-bottom:1px solid #f1f5f9;width:38%;background:#fafafa;">
+              <span style="color:#9ca3af;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Tracking Number</span>
             </td>
-            <td style="padding:16px 20px;border-bottom:1px solid #f1f5f9;">
-              <span style="color:#111827;font-size:15px;font-weight:700;font-family:monospace;letter-spacing:0.5px;">${p.tracking_number}</span>
+            <td style="padding:16px 22px;border-bottom:1px solid #f1f5f9;">
+              <span style="color:#050A30;font-size:16px;font-weight:800;font-family:'Courier New',monospace;letter-spacing:1px;">${p.tracking_number}</span>
             </td>
           </tr>
 
           <!-- Status -->
           <tr>
-            <td style="padding:16px 20px;border-bottom:1px solid #f1f5f9;">
-              <span style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Current Status</span>
+            <td style="padding:16px 22px;border-bottom:1px solid #f1f5f9;background:#fafafa;">
+              <span style="color:#9ca3af;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Current Status</span>
             </td>
-            <td style="padding:16px 20px;border-bottom:1px solid #f1f5f9;">
-              <span style="display:inline-block;background:${cfg.color}18;color:${cfg.color};font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:1px solid ${cfg.color}30;">${p.status}</span>
+            <td style="padding:16px 22px;border-bottom:1px solid #f1f5f9;">
+              <span style="display:inline-block;background:${cfg.color}15;color:${cfg.color};font-size:12px;font-weight:800;padding:6px 16px;border-radius:20px;border:1.5px solid ${cfg.color}40;letter-spacing:0.5px;">${p.status}</span>
             </td>
           </tr>
 
           <!-- Updated -->
           <tr>
-            <td style="padding:16px 20px;">
-              <span style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Last Updated</span>
+            <td style="padding:16px 22px;background:#fafafa;">
+              <span style="color:#9ca3af;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Last Updated</span>
             </td>
-            <td style="padding:16px 20px;">
-              <span style="color:#374151;font-size:13px;">${dateStr}</span>
+            <td style="padding:16px 22px;">
+              <span style="color:#374151;font-size:13px;font-weight:500;">${dateStr}</span>
             </td>
           </tr>
 
@@ -1233,15 +1254,30 @@ function getEmailTemplate(p) {
       </td>
     </tr>
 
+    <!-- ── BARCODE SECTION ── -->
+    <tr>
+      <td style="background:#ffffff;padding:0 40px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+          <tr>
+            <td style="padding:18px 24px;text-align:center;">
+              <p style="margin:0 0 12px;color:#9ca3af;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Shipment Barcode</p>
+              ${barcodeHtml}
+              <p style="margin:10px 0 0;color:#6b7280;font-size:11px;font-family:'Courier New',monospace;letter-spacing:2px;font-weight:600;">${p.tracking_number}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
     <!-- ── STATUS NOTE (if provided) ── -->
     ${hasReason ? `
     <tr>
-      <td style="background:#ffffff;padding:0 40px 4px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${cfg.color}0d;border:1px solid ${cfg.color}30;border-left:4px solid ${cfg.color};border-radius:8px;">
+      <td style="background:#ffffff;padding:0 40px 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${cfg.color}08;border:1px solid ${cfg.color}30;border-left:4px solid ${cfg.color};border-radius:10px;">
           <tr>
-            <td style="padding:18px 20px;">
-              <p style="margin:0 0 6px;color:${cfg.color};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Note from our team</p>
-              <p style="margin:0;color:#374151;font-size:14px;line-height:1.6;">${p.status_reason}</p>
+            <td style="padding:20px 22px;">
+              <p style="margin:0 0 8px;color:${cfg.color};font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;">📌 Note from Our Team</p>
+              <p style="margin:0;color:#374151;font-size:14px;line-height:1.7;">${p.status_reason}</p>
             </td>
           </tr>
         </table>
@@ -1250,9 +1286,9 @@ function getEmailTemplate(p) {
 
     <!-- ── CTA BUTTON ── -->
     <tr>
-      <td style="background:#ffffff;padding:28px 40px 36px;text-align:center;">
-        <a href="${trackUrl}" style="display:inline-block;background:linear-gradient(135deg,#FF8C00,#e67e00);color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:10px;font-size:16px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 15px rgba(255,140,0,0.35);">📍 Track My Shipment</a>
-        <p style="margin:16px 0 0;color:#9ca3af;font-size:12px;">Or visit: <a href="${trackUrl}" style="color:#FF8C00;text-decoration:none;">${trackUrl}</a></p>
+      <td style="background:#ffffff;padding:8px 40px 40px;text-align:center;">
+        <a href="${trackUrl}" style="display:inline-block;background:linear-gradient(135deg,#FF8C00 0%,#e67e00 100%);color:#ffffff;text-decoration:none;padding:18px 48px;border-radius:12px;font-size:16px;font-weight:800;letter-spacing:0.5px;box-shadow:0 6px 20px rgba(255,140,0,0.4);border:none;">📍 Track My Shipment Live</a>
+        <p style="margin:14px 0 0;color:#9ca3af;font-size:12px;">Or visit: <a href="${trackUrl}" style="color:#FF8C00;text-decoration:none;font-weight:600;">${trackUrl}</a></p>
       </td>
     </tr>
 
@@ -1268,12 +1304,12 @@ function getEmailTemplate(p) {
       <td style="background:#ffffff;padding:28px 40px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
           <td style="width:50%;padding-right:16px;">
-            <p style="margin:0 0 4px;color:#374151;font-size:13px;font-weight:600;">📧 Email Support</p>
-            <a href="mailto:contact@meridiangrps.com" style="color:#FF8C00;font-size:13px;text-decoration:none;">contact@meridiangrps.com</a>
+            <p style="margin:0 0 6px;color:#374151;font-size:13px;font-weight:700;">📧 Customer Support</p>
+            <a href="mailto:contact@meridiangrps.com" style="color:#FF8C00;font-size:13px;text-decoration:none;font-weight:600;">contact@meridiangrps.com</a>
           </td>
-          <td style="width:50%;padding-left:16px;border-left:1px solid #f1f5f9;">
-            <p style="margin:0 0 4px;color:#374151;font-size:13px;font-weight:600;">🌐 Track Online</p>
-            <a href="https://nexshipment.com" style="color:#FF8C00;font-size:13px;text-decoration:none;">nexshipment.com</a>
+          <td style="width:50%;padding-left:16px;border-left:1px solid #e5e7eb;">
+            <p style="margin:0 0 6px;color:#374151;font-size:13px;font-weight:700;">🌐 Track Online</p>
+            <a href="https://meridiangrps.com" style="color:#FF8C00;font-size:13px;text-decoration:none;font-weight:600;">meridiangrps.com</a>
           </td>
         </tr></table>
       </td>
@@ -1281,18 +1317,18 @@ function getEmailTemplate(p) {
 
     <!-- ── FOOTER ── -->
     <tr>
-      <td style="background:#0b1120;border-radius:0 0 16px 16px;padding:28px 40px;text-align:center;">
-        <p style="margin:0 0 8px;color:rgba(255,255,255,0.9);font-size:14px;font-weight:700;">NEX<span style="color:#FF8C00;">SHIPMENT</span></p>
+      <td style="background:#050A30;border-radius:0 0 16px 16px;padding:32px 40px;text-align:center;">
+        <p style="margin:0 0 6px;color:#ffffff;font-size:16px;font-weight:900;letter-spacing:-0.3px;">MERIDIAN <span style="color:#FF8C00;">GLOBAL</span> TRANSIT</p>
+        <p style="margin:0 0 14px;color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:1px;text-transform:uppercase;">Global Logistics Excellence</p>
         <p style="margin:0 0 12px;color:rgba(255,255,255,0.4);font-size:12px;line-height:1.6;">1400 Logistics Blvd, Houston, TX 77032, United States</p>
-        <p style="margin:0;color:rgba(255,255,255,0.25);font-size:11px;">© ${year} Nexshipment. All rights reserved. · <a href="https://nexshipment.com" style="color:rgba(255,255,255,0.35);text-decoration:none;">nexshipment.com</a></p>
-        <p style="margin:12px 0 0;color:rgba(255,255,255,0.2);font-size:10px;">You received this email because you have a shipment registered with Nexshipment. Do not reply to this automated message.</p>
+        <p style="margin:0;color:rgba(255,255,255,0.25);font-size:11px;">© ${year} Meridian Global Transit. All rights reserved. · <a href="https://meridiangrps.com" style="color:rgba(255,255,255,0.4);text-decoration:none;">meridiangrps.com</a></p>
+        <p style="margin:12px 0 0;color:rgba(255,255,255,0.18);font-size:10px;line-height:1.6;">You received this email because you have a shipment registered with Meridian Global Transit.<br>Please do not reply to this automated message — contact us at contact@meridiangrps.com</p>
       </td>
     </tr>
 
   </table>
 </td></tr>
 </table>
-
 </body>
 </html>`;
 }
@@ -1341,10 +1377,13 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
       };
       const subject = subjectMap[status] || `Shipment Update: ${status} — ${tracking_number}`;
 
-      // Call Supabase Edge Function (deployed with --no-verify-jwt, no CORS issues)
+      // Call Supabase Edge Function — Authorization header required
       const res = await fetch('https://kuendlwvbcqcywkyixsn.supabase.co/functions/v1/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZW5kbHd2YmNxY3l3a3lpeHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1ODQ5NzgsImV4cCI6MjA2NjE2MDk3OH0.cdwMneFBaVMrSHjMv5BTf_mfAFdGN_2_uxM7S4OWjpY'
+        },
         body: JSON.stringify({ to: client_email, subject, html: htmlBody })
       });
 

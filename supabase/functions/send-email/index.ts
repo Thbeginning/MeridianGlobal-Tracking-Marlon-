@@ -1,5 +1,5 @@
-const RESEND_API_KEY = "re_E1MPKxUR_9Jquyp7G2ECXjwg6NLLpjK5p";
-const FROM_EMAIL     = "Meridian Global Transit <contact@meridianglobaltransit.com>";
+const RESEND_API_KEY = "re_WAfS5So3_3AJ6D7P31CyqfNoASThzf5qu";
+const FROM_EMAIL     = "Meridian Global Transit <contact@meridiangrps.com>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
