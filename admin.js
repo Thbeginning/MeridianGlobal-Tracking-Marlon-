@@ -1377,12 +1377,11 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
       };
       const subject = subjectMap[status] || `Shipment Update: ${status} — ${tracking_number}`;
 
-      // Call Supabase Edge Function — Authorization header required
-      const res = await fetch('https://kuendlwvbcqcywkyixsn.supabase.co/functions/v1/send-email', {
+      // Call Vercel API route — more reliable than Supabase edge function
+      const res = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZW5kbHd2YmNxY3l3a3lpeHNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1ODQ5NzgsImV4cCI6MjA2NjE2MDk3OH0.cdwMneFBaVMrSHjMv5BTf_mfAFdGN_2_uxM7S4OWjpY'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ to: client_email, subject, html: htmlBody })
       });

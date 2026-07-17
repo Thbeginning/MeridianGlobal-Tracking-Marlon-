@@ -1,53 +1,60 @@
 export default async function handler(req, res) {
   // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
+  );
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
+    res.status(200).end();
+    return;
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { client_email, tracking_number, status, htmlBody } = req.body;
+    const { to, subject, html, client_email, tracking_number, status, htmlBody } = req.body;
 
-    if (!client_email || !htmlBody) {
-      return res.status(400).json({ error: 'Missing required fields' })
+    // Support both calling conventions
+    const recipient  = to || client_email;
+    const emailSubject = subject || `Shipment Update: ${tracking_number} — ${status}`;
+    const emailHtml  = html || htmlBody;
+
+    if (!recipient || !emailHtml) {
+      return res.status(400).json({ error: 'Missing required fields: to/client_email and html/htmlBody' });
     }
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer re_N5op6iVA_5uKVo2oXyaWSjM89zQpifYo5",
+        "Authorization": "Bearer re_izdhzxM6_KDUkvZpAdUCado5tSP9pPPwz",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: "Nexshipment <contact@meridiangrps.com>",
-        to: client_email,
-        subject: `Shipment Update: ${tracking_number} — ${status}`,
-        html: htmlBody
+        from: "Meridian Global Transit <contact@meridiangrps.com>",
+        to: Array.isArray(recipient) ? recipient : [recipient],
+        subject: emailSubject,
+        html: emailHtml
       })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Resend Error:', data);
+      console.error('[MGT] Resend Error:', data);
       return res.status(response.status).json({ error: data.message || 'Failed to send email', details: data });
     }
 
-    return res.status(200).json({ success: true, data });
+    console.log('[MGT] Email sent successfully:', data.id);
+    return res.status(200).json({ success: true, id: data.id });
+
   } catch (error) {
-    console.error('Server Error:', error);
+    console.error('[MGT] Server Error:', error);
     return res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
 }
