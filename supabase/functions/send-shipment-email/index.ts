@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const RESEND_API_KEY = "re_izdhzxM6_KDUkvZpAdUCado5tSP9pPPwz";
+const RESEND_API_KEY = "re_KTdPrP9S_A7wjH61oP1Ns1GnjehtsqGNA";
 const FROM_EMAIL    = "contact@meridiangrps.com";
 const FROM_NAME     = "Meridian Global Transit";
 const WEB_URL       = "https://meridiangrps.com";
