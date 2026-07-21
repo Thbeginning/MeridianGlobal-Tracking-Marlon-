@@ -22,3 +22,18 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# ── SECURITY: Environment & Secret files — NEVER commit these ──────────────────
+.env
+.env.*
+.env.local
+.env.production
+*.env
+
+# Supabase local config (contains project secrets)
+supabase/.env
+.supabase/
+
+# Secret key files
+secrets.json
+secrets.toml

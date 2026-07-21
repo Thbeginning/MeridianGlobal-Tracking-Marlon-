@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    Nexshipment � Command Centre JS
    ==========================================*/
 'use strict';
@@ -1363,27 +1363,21 @@ async function handleUpdateWithEmail(shipmentData, shouldNotify) {
     toast(`📧 Sending notification email to ${client_email}…`);
 
     try {
-      const htmlBody = getEmailTemplate({ tracking_number, status, status_reason, updated_at: isoDate });
-
-      // Determine a professional subject line based on status
-      const subjectMap = {
-        'Order Placed':      `Your Shipment Has Been Confirmed — ${tracking_number}`,
-        'In Transit':        `Your Shipment Is On Its Way — ${tracking_number}`,
-        'Customs Hold':      `Action Required: Shipment on Customs Hold — ${tracking_number}`,
-        'Customs Cleared':   `Great News! Customs Cleared — ${tracking_number}`,
-        'Out for Delivery':  `Out for Delivery Today — ${tracking_number}`,
-        'Delivered':         `Delivered! Your Shipment Has Arrived — ${tracking_number}`,
-        'On Hold':           `Shipment On Hold — ${tracking_number}`,
-      };
-      const subject = subjectMap[status] || `Shipment Update: ${status} — ${tracking_number}`;
-
-      // Call Vercel API route — more reliable than Supabase edge function
-      const res = await fetch('/api/send-email', {
+      // Call Supabase Edge Function — Resend API key is a secure server-side secret
+      const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ to: client_email, subject, html: htmlBody })
+        body: JSON.stringify({
+          tracking_number,
+          status,
+          status_reason: status_reason || '',
+          client_email,
+          updated_at: isoDate,
+        }),
       });
 
       const resData = await res.json().catch(() => ({}));
